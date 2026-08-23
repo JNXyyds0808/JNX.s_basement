@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+  <title>JNX.</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css">
+
+</head>
+
+
+<body>
+
+  <!-- =====================================================
+       HOME
+  ====================================================== -->
+
+  <div
+    class="page"
+    id="home">
+
+
+    <!-- NAVIGATION -->
+
+    <nav>
+
+      <div class="logo">
+        JNX.
+      </div>
+
+
+      <div class="nav-right">
+
+        <div class="nav-links">
+
+          <a
+            href="#home"
+            data-en="Home"
+            data-zh="首页">
+            首页
+          </a>
+
+          <a
+            href="#about"
+            data-en="About"
+            data-zh="关于">
+            关于
+          </a>
+
+          <a
+            href="#stuff"
+            data-en="Stuff"
+            data-zh="随便看看">
+            随便看看
+          </a>
+
+        </div>
+
+
+        <!-- ACCOUNT -->
+
+        <div class="account-area">
+
+
+          <button
+            class="user-menu-button"
+            id="userMenuButton">
+
+            <span
+              class="welcome-user"
+              id="welcomeUser">
+            </span>
+
+            <span class="user-arrow">
+              ▾
+            </span>
+
+          </button>
+
+
+          <!-- USER MENU -->
+
+          <div
+            class="user-menu"
+            id="userMenu">
+
+
+            <div
+              class="user-menu-name"
+              id="userMenuName">
+            </div>
+
+
+            <div
+              class="user-menu-divider">
+            </div>
+
+
+            <button
+              class="user-menu-item"
+              id="profileButton"
+              data-en="My Profile"
+              data-zh="我的资料">
+              我的资料
+            </button>
+
+
+            <button
+              class="user-menu-item"
+              id="settingsButton"
+              data-en="Settings"
+              data-zh="设置">
+              设置
+            </button>
+
+
+            <div
+              class="user-menu-divider">
+            </div>
+
+
+            <button
+              class="user-menu-item logout-item"
+              id="logoutButton"
+              data-en="Log out"
+              data-zh="退出登录">
+              退出登录
+            </button>
+
+          </div>
+
+
+          <!-- LOGIN -->
+
+          <a
+            href="#login"
+            class="login-link"
+            data-en="Log in"
+            data-zh="登录">
+            登录
+          </a>
+
+
+        </div>
+
+
+        <!-- LANGUAGE -->
+
+        <button
+          id="languageBtn">
+          English
+        </button>
+
+      </div>
+
+    </nav>
+
+
+
+    <!-- =================================================
+         HOME CONTENT
+    ================================================== -->
+
+    <main>
+
+
+      <p
+        class="small-text"
+        data-en="WELCOME TO JNX'S LITTLE CORNER"
+        data-zh="欢迎来到 JNX 的小角落">
+
+        欢迎来到 JNX 的小角落
+
+      </p>
+
+
+      <h1>
+
+        <span
+          data-en="Hi, I'm "
+          data-zh="你好，我是 ">
+
+          你好，我是
+
+        </span>
+
+        <span>
+          JNX.
+        </span>
+
+      </h1>
+
+
+      <p
+        class="description"
+        data-en="This is a little corner belonging to JNX. Everyone is welcome to join. I'll put some random ideas, projects, experiments, and other stuff I make here."
+        data-zh="这是一个属于 JNX 的小角落。欢迎所有人加入这里。这里可能会放一些我的奇思妙想、项目、实验，还有各种我随手做的东西。">
+
+        这是一个属于 JNX 的小角落。
+        欢迎所有人加入这里。
+        这里可能会放一些我的奇思妙想、项目、实验，
+        还有各种我随手做的东西。
+
+      </p>
+
+
+      <div class="buttons">
+
+        <a
+          href="#about"
+          class="button primary"
+          data-en="About Me"
+          data-zh="关于我">
+
+          关于我
+
+        </a>
+
+
+        <a
+          href="#stuff"
+          class="button secondary"
+          data-en="Just Some Stuff"
+          data-zh="随便看看">
+
+          随便看看
+
+        </a>
+
+      </div>
+
+
+    </main>
+
+
+    <div
+      class="scroll"
+      data-en="↓ Scroll if you want"
+      data-zh="↓ 想看就往下滑">
+
+      ↓ 想看就往下滑
+
+    </div>
+
+
+  </div>
+
+
+
+  <!-- =====================================================
+       RECENT ACTIVITY
+  ====================================================== -->
+
+  <section
+    id="recent">
+
+
+    <div class="section-inner">
+
+
+      <p
+        class="small-text"
+        data-en="WHAT I'M UP TO"
+        data-zh="最近在做什么">
+
+        最近在做什么
+
+      </p>
+
+
+      <h2
+        data-en="Recently"
+        data-zh="最近在做什么">
+
+        最近在做什么
+
+      </h2>
+
+
+      <p
+        class="section-description"
+        data-en="A little update from JNX."
+        data-zh="这里会记录 JNX 最近在做些什么。">
+
+        这里会记录 JNX 最近在做些什么。
+
+      </p>
+
+
+      <!-- ACTIVITY LIST -->
+
+      <div
+        class="activity-list"
+        id="activityList">
+
+        <!-- JS 会从 Supabase 自动加载内容 -->
+
+        <div
+          class="activity-loading"
+          id="activityLoading"
+          data-en="Loading..."
+          data-zh="加载中...">
+
+          加载中...
+
+        </div>
+
+      </div>
+
+
+      <!-- ADMIN BUTTON -->
+
+      <button
+        class="admin-edit-button"
+        id="adminEditButton"
+        style="display:none;"
+        data-en="Edit Updates"
+        data-zh="编辑动态">
+
+        编辑动态
+
+      </button>
+
+
+    </div>
+
+
+  </section>
+
+
+
+  <!-- =====================================================
+       ABOUT
+  ====================================================== -->
+
+  <section
+    id="about">
+
+
+    <div class="section-inner">
+
+
+      <h2
+        data-en="About Me"
+        data-zh="关于我">
+
+        关于我
+
+      </h2>
+
+
+      <p
+        data-en="I'm currently studying at Great Neck South High School. I like trying random things, learning new stuff, and making things just because I think they're fun."
+        data-zh="我现在在 Great Neck South High School 上学。我喜欢尝试一些奇奇怪怪的东西，学习新的东西，也喜欢单纯因为觉得有意思就做点东西。">
+
+        我现在在 Great Neck South High School 上学。
+        我喜欢尝试一些奇奇怪怪的东西，
+        学习新的东西，
+        也喜欢单纯因为觉得有意思就做点东西。
+
+      </p>
+
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =====================================================
+       STUFF
+  ====================================================== -->
+
+  <section
+    id="stuff">
+
+
+    <div class="section-inner">
+
+
+      <h2
+        data-en="Stuff"
+        data-zh="随便放点东西">
+
+        随便放点东西
+
+      </h2>
+
+
+      <p
+        data-en="Maybe I'll put some ideas, random projects, experiments, games, or whatever I feel like making here."
+        data-zh="以后可能会在这里放一些想法、奇怪的小项目、实验、小游戏，或者任何我突然想做的东西。">
+
+        以后可能会在这里放一些想法、
+        奇怪的小项目、实验、小游戏，
+        或者任何我突然想做的东西。
+
+      </p>
+
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =====================================================
+       ADMIN ACTIVITY EDITOR
+  ====================================================== -->
+
+  <div
+    class="profile-modal"
+    id="adminActivityModal">
+
+
+    <div
+      class="profile-overlay"
+      id="adminActivityOverlay">
+    </div>
+
+
+    <div
+      class="profile-box admin-activity-box">
+
+
+      <button
+        class="profile-close"
+        id="adminActivityClose">
+
+        ×
+
+      </button>
+
+
+      <h2
+        data-en="Edit Updates"
+        data-zh="编辑动态">
+
+        编辑动态
+
+      </h2>
+
+
+      <p
+        class="profile-subtitle"
+        data-en="Update what JNX is currently working on."
+        data-zh="更新 JNX 最近正在做的事情。">
+
+        更新 JNX 最近正在做的事情。
+
+      </p>
+
+
+      <!-- ACTIVITY TITLE -->
+
+      <div class="settings-field">
+
+        <label
+          for="activityTitleInput"
+          data-en="Title"
+          data-zh="标题">
+
+          标题
+
+        </label>
+
+
+        <input
+          type="text"
+          id="activityTitleInput"
+          maxlength="100"
+          placeholder="Title">
+
+
+      </div>
+
+
+
+      <!-- ACTIVITY CONTENT -->
+
+      <div class="settings-field">
+
+        <label
+          for="activityContentInput"
+          data-en="Content"
+          data-zh="内容">
+
+          内容
+
+        </label>
+
+
+        <textarea
+          id="activityContentInput"
+          maxlength="1000"
+          placeholder="What are you working on?"></textarea>
+
+
+      </div>
+
+
+
+      <!-- ADMIN BUTTONS -->
+
+      <div class="settings-buttons">
+
+
+        <button
+          class="settings-cancel"
+          id="adminActivityCancel"
+          data-en="Cancel"
+          data-zh="取消">
+
+          取消
+
+        </button>
+
+
+        <button
+          class="settings-save"
+          id="adminActivitySave"
+          data-en="Save"
+          data-zh="保存">
+
+          保存
+
+        </button>
+
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       LOGIN MODAL
+  ====================================================== -->
+
+  <div
+    class="login-modal"
+    id="loginModal">
+
+
+    <div
+      class="login-overlay"
+      id="loginOverlay">
+    </div>
+
+
+    <div class="login-box">
+
+
+      <button
+        class="login-close"
+        id="loginClose">
+
+        ×
+
+      </button>
+
+
+      <h2
+        data-en="Log in"
+        data-zh="登录">
+
+        登录
+
+      </h2>
+
+
+      <p
+        class="login-subtitle"
+        data-en="Welcome back."
+        data-zh="欢迎回来。">
+
+        欢迎回来。
+
+      </p>
+
+
+      <input
+        type="text"
+        id="loginUsername"
+        placeholder="Username">
+
+
+      <input
+        type="password"
+        id="loginPassword"
+        placeholder="Password">
+
+
+      <button
+        class="login-button"
+        id="loginButton"
+        data-en="Log in"
+        data-zh="登录">
+
+        登录
+
+      </button>
+
+
+      <p class="register-text">
+
+
+        <span
+          data-en="Don't have an account?"
+          data-zh="还没有账号？">
+
+          还没有账号？
+
+        </span>
+
+
+        <a
+          href="#"
+          id="registerLink"
+          data-en="Create one"
+          data-zh="创建账号">
+
+          创建账号
+
+        </a>
+
+
+      </p>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       REGISTER MODAL
+  ====================================================== -->
+
+  <div
+    class="login-modal"
+    id="registerModal">
+
+
+    <div
+      class="login-overlay"
+      id="registerOverlay">
+    </div>
+
+
+    <div class="login-box">
+
+
+      <button
+        class="login-close"
+        id="registerClose">
+
+        ×
+
+      </button>
+
+
+      <h2
+        data-en="Create account"
+        data-zh="创建账号">
+
+        创建账号
+
+      </h2>
+
+
+      <p
+        class="login-subtitle"
+        data-en="Make your own JNX account."
+        data-zh="创建属于你的 JNX 账号。">
+
+        创建属于你的 JNX 账号。
+
+      </p>
+
+
+      <input
+        type="text"
+        id="registerUsername"
+        placeholder="Username">
+
+
+      <input
+        type="password"
+        id="registerPassword"
+        placeholder="Password">
+
+
+      <input
+        type="password"
+        id="registerConfirmPassword"
+        placeholder="Confirm password">
+
+
+      <button
+        class="login-button"
+        id="registerButton"
+        data-en="Create account"
+        data-zh="创建账号">
+
+        创建账号
+
+      </button>
+
+
+      <p class="register-text">
+
+
+        <span
+          data-en="Already have an account?"
+          data-zh="已经有账号？">
+
+          已经有账号？
+
+        </span>
+
+
+        <a
+          href="#"
+          id="backToLogin"
+          data-en="Log in"
+          data-zh="登录">
+
+          登录
+
+        </a>
+
+
+      </p>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       PROFILE MODAL
+  ====================================================== -->
+
+  <div
+    class="profile-modal"
+    id="profileModal">
+
+
+    <div
+      class="profile-overlay"
+      id="profileOverlay">
+    </div>
+
+
+    <div class="profile-box">
+
+
+      <button
+        class="profile-close"
+        id="profileClose">
+
+        ×
+
+      </button>
+
+
+      <div
+        class="profile-avatar"
+        id="profileAvatar">
+
+        J
+
+      </div>
+
+
+      <h2
+        data-en="My Profile"
+        data-zh="我的资料">
+
+        我的资料
+
+      </h2>
+
+
+      <p
+        class="profile-subtitle"
+        data-en="Your JNX account"
+        data-zh="你的 JNX 账号">
+
+        你的 JNX 账号
+
+      </p>
+
+
+      <div class="profile-info">
+
+
+        <div class="profile-row">
+
+          <span
+            class="profile-label"
+            data-en="Display Name"
+            data-zh="显示名称">
+
+            显示名称
+
+          </span>
+
+
+          <span
+            class="profile-value"
+            id="profileDisplayName">
+
+          </span>
+
+        </div>
+
+
+        <div class="profile-row">
+
+          <span
+            class="profile-label"
+            data-en="Username"
+            data-zh="用户名">
+
+            用户名
+
+          </span>
+
+
+          <span
+            class="profile-value"
+            id="profileUsername">
+
+           
+
+          </span>
+
+        </div>
+
+
+        <div class="profile-row">
+
+          <span
+            class="profile-label"
+            data-en="Status"
+            data-zh="状态">
+
+            状态
+
+          </span>
+
+
+          <span
+            class="profile-value profile-online"
+            data-en="● Logged in"
+            data-zh="● 已登录">
+
+            ● 已登录
+
+          </span>
+
+        </div>
+
+
+        <div class="profile-row">
+
+          <span
+            class="profile-label"
+            data-en="Account"
+            data-zh="账号类型">
+
+            账号类型
+
+          </span>
+
+
+          <span
+            class="profile-value"
+            data-en="JNX Account"
+            data-zh="JNX 账号">
+
+            JNX 账号
+
+          </span>
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       SETTINGS MODAL
+  ====================================================== -->
+
+  <div
+    class="settings-modal"
+    id="settingsModal">
+
+
+    <div
+      class="settings-overlay"
+      id="settingsOverlay">
+    </div>
+
+
+    <div class="settings-box">
+
+
+      <button
+        class="settings-close"
+        id="settingsClose">
+
+        ×
+
+      </button>
+
+
+      <h2
+        data-en="Settings"
+        data-zh="设置">
+
+        设置
+
+      </h2>
+
+
+      <p
+        class="settings-subtitle"
+        data-en="Customize your JNX account."
+        data-zh="自定义你的 JNX 账号。">
+
+        自定义你的 JNX 账号。
+
+      </p>
+
+
+
+      <!-- LANGUAGE -->
+
+      <div class="settings-section">
+
+
+        <div
+          class="settings-section-title"
+          data-en="Language"
+          data-zh="语言">
+
+          语言
+
+        </div>
+
+
+        <div class="settings-option-row">
+
+
+          <button
+            class="settings-choice"
+            id="settingsChinese">
+
+            中文
+
+          </button>
+
+
+          <button
+            class="settings-choice"
+            id="settingsEnglish">
+
+            English
+
+          </button>
+
+
+        </div>
+
+      </div>
+
+
+
+      <!-- APPEARANCE -->
+
+      <div class="settings-section">
+
+
+        <div
+          class="settings-section-title"
+          data-en="Appearance"
+          data-zh="外观">
+
+          外观
+
+        </div>
+
+
+        <div class="settings-option-row">
+
+
+          <button
+            class="settings-choice"
+            id="darkModeButton"
+            data-en="Dark"
+            data-zh="深色">
+
+            深色
+
+          </button>
+
+
+          <button
+            class="settings-choice"
+            id="lightModeButton"
+            data-en="Light"
+            data-zh="浅色">
+
+            浅色
+
+          </button>
+
+
+        </div>
+
+      </div>
+
+
+
+      <!-- PROFILE -->
+
+      <div class="settings-section">
+
+
+        <div
+          class="settings-section-title"
+          data-en="Profile"
+          data-zh="个人资料">
+
+          个人资料
+
+        </div>
+
+
+        <div class="settings-field">
+
+
+          <label
+            for="displayNameInput"
+            data-en="Display Name"
+            data-zh="显示名称">
+
+            显示名称
+
+          </label>
+
+
+          <input
+            type="text"
+            id="displayNameInput"
+            maxlength="30"
+            placeholder="Display Name">
+
+
+          <p
+            class="settings-hint"
+            data-en="This is the name shown on your JNX profile."
+            data-zh="这是你的 JNX 个人资料中显示的名称。">
+
+            这是你的 JNX 个人资料中显示的名称。
+
+          </p>
+
+
+        </div>
+
+
+        <div class="settings-row">
+
+
+          <div>
+
+            <span
+              class="settings-label"
+              data-en="Username"
+              data-zh="用户名">
+
+              用户名
+
+            </span>
+
+
+            <p
+              class="settings-small"
+              data-en="Your username cannot be changed."
+              data-zh="用户名暂时无法修改。">
+
+              用户名暂时无法修改。
+
+            </p>
+
+          </div>
+
+
+          <span
+            class="settings-value"
+            id="settingsUsername">
+
+          </span>
+
+
+        </div>
+
+
+      </div>
+
+
+
+      <!-- ACCOUNT -->
+
+      <div class="settings-section">
+
+
+        <div
+          class="settings-section-title"
+          data-en="Account"
+          data-zh="账号">
+
+          账号
+
+        </div>
+
+
+        <button
+          class="settings-action"
+          id="changeUsernameButton">
+
+
+          <span
+            data-en="Change username"
+            data-zh="修改用户名">
+
+            修改用户名
+
+          </span>
+
+
+          <span>
+            ›
+          </span>
+
+
+        </button>
+
+
+        <button
+          class="settings-action"
+          id="changePasswordButton">
+
+
+          <span
+            data-en="Change password"
+            data-zh="修改密码">
+
+            修改密码
+
+          </span>
+
+
+          <span>
+            ›
+          </span>
+
+
+        </button>
+
+
+      </div>
+
+
+
+      <!-- DANGER ZONE -->
+
+      <div
+        class="settings-section danger-zone">
+
+
+        <div
+          class="settings-section-title danger-title"
+          data-en="Danger Zone"
+          data-zh="危险操作">
+
+          危险操作
+
+        </div>
+
+
+        <button
+          class="settings-action delete-account"
+          id="deleteAccountButton">
+
+
+          <span
+            data-en="Delete account"
+            data-zh="删除账号">
+
+            删除账号
+
+          </span>
+
+
+          <span>
+            ›
+          </span>
+
+
+        </button>
+
+
+      </div>
+
+
+      <!-- SAVE -->
+
+      <div class="settings-buttons">
+
+
+        <button
+          class="settings-cancel"
+          id="settingsCancel"
+          data-en="Cancel"
+          data-zh="取消">
+
+          取消
+
+        </button>
+
+
+        <button
+          class="settings-save"
+          id="settingsSave"
+          data-en="Save Changes"
+          data-zh="保存更改">
+
+          保存更改
+
+        </button>
+
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       CHANGE USERNAME
+  ====================================================== -->
+
+  <div
+    class="login-modal"
+    id="usernameModal">
+
+
+    <div
+      class="login-overlay"
+      id="usernameOverlay">
+    </div>
+
+
+    <div class="login-box">
+
+
+      <button
+        class="login-close"
+        id="usernameClose">
+
+        ×
+
+      </button>
+
+
+      <h2
+        data-en="Change username"
+        data-zh="修改用户名">
+
+        修改用户名
+
+      </h2>
+
+
+      <p
+        class="login-subtitle"
+        data-en="Choose a new username."
+        data-zh="选择一个新的用户名。">
+
+        选择一个新的用户名。
+
+      </p>
+
+
+      <input
+        type="text"
+        id="newUsername"
+        placeholder="New username">
+
+
+      <button
+        class="login-button"
+        id="saveUsernameButton"
+        data-en="Save username"
+        data-zh="保存用户名">
+
+        保存用户名
+
+      </button>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       CHANGE PASSWORD
+  ====================================================== -->
+
+  <div
+    class="login-modal"
+    id="passwordModal">
+
+
+    <div
+      class="login-overlay"
+      id="passwordOverlay">
+    </div>
+
+
+    <div class="login-box">
+
+
+      <button
+        class="login-close"
+        id="passwordClose">
+
+        ×
+
+      </button>
+
+
+      <h2
+        data-en="Change password"
+        data-zh="修改密码">
+
+        修改密码
+
+      </h2>
+
+
+      <p
+        class="login-subtitle"
+        data-en="Create a new password."
+        data-zh="创建新的密码。">
+
+        创建新的密码。
+
+      </p>
+
+
+      <input
+        type="password"
+        id="oldPassword"
+        placeholder="Current password">
+
+
+      <input
+        type="password"
+        id="newPassword"
+        placeholder="New password">
+
+
+      <input
+        type="password"
+        id="confirmNewPassword"
+        placeholder="Confirm new password">
+
+
+      <button
+        class="login-button"
+        id="savePasswordButton"
+        data-en="Save password"
+        data-zh="保存密码">
+
+        保存密码
+
+      </button>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+  ====================================================== -->
+
+  <script src="script.js"></script>
+
+
+</body>
+
+</html>
