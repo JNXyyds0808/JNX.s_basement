@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   /* =====================================================
      JNX + SUPABASE
-  ===================================================== */
+  ====================================================== */
 
   const SUPABASE_URL =
     "https://qdehfgjifhtczkrpuadl.supabase.co";
@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   /* =====================================================
      LOAD SUPABASE
-  ===================================================== */
+  ====================================================== */
 
   function loadSupabase() {
 
@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   /* =====================================================
      SUPABASE CLIENT
-  ===================================================== */
+  ====================================================== */
 
   const db =
     window.supabase.createClient(
@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   /* =====================================================
      LANGUAGE
-  ===================================================== */
+  ====================================================== */
 
   let language = "zh";
 
@@ -564,104 +564,72 @@ document.addEventListener("DOMContentLoaded", async function () {
   ===================================================== */
 
   function openLogin() {
-
     loginModal?.classList.add("active");
-
   }
 
 
   function closeLogin() {
-
     loginModal?.classList.remove("active");
-
   }
 
 
   function openRegister() {
-
     registerModal?.classList.add("active");
-
   }
 
 
   function closeRegister() {
-
     registerModal?.classList.remove("active");
-
   }
 
 
   function openProfile() {
-
     profileModal?.classList.add("active");
-
   }
 
 
   function closeProfile() {
-
     profileModal?.classList.remove("active");
-
   }
 
 
   function openSettings() {
-
     settingsModal?.classList.add("active");
-
   }
 
 
   function closeSettings() {
-
     settingsModal?.classList.remove("active");
-
   }
 
 
   function openUsernameModal() {
-
     usernameModal?.classList.add("active");
-
   }
 
 
   function closeUsernameModal() {
-
     usernameModal?.classList.remove("active");
-
   }
 
 
   function openPasswordModal() {
-
     passwordModal?.classList.add("active");
-
   }
 
 
   function closePasswordModal() {
-
     passwordModal?.classList.remove("active");
-
   }
 
 
   function openAdminActivity() {
-
-    adminActivityModal?.classList.add(
-      "active"
-    );
-
+    adminActivityModal?.classList.add("active");
   }
 
 
   function closeAdminActivity() {
-
-    adminActivityModal?.classList.remove(
-      "active"
-    );
-
+    adminActivityModal?.classList.remove("active");
   }
 
 
@@ -1593,8 +1561,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   /* =====================================================
      RECENT ACTIVITY
-     LOAD
-  ===================================================== */
+     DATABASE:
+     content = TITLE
+     content_zh = CHINESE CONTENT
+  ====================================================== */
 
   async function loadSiteUpdates() {
 
@@ -1615,7 +1585,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       await db
         .from("site_updates")
         .select(
-          "id, title, content, created_at, updated_at"
+          "id, content, content_zh, updated_at"
         )
         .order(
           "updated_at",
@@ -1647,9 +1617,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         document.createElement("p");
 
       errorElement.textContent =
-        language === "zh"
-          ? "动态暂时无法加载。"
-          : "Updates could not be loaded.";
+        "动态暂时无法加载。";
 
       activityList.appendChild(
         errorElement
@@ -1672,13 +1640,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         document.createElement("p");
 
       empty.textContent =
-        language === "zh"
-          ? "暂时还没有动态。"
-          : "No updates yet.";
+        "暂时还没有动态。";
 
       activityList.appendChild(
         empty
       );
+
+      currentActivity = null;
 
       return;
 
@@ -1701,14 +1669,18 @@ document.addEventListener("DOMContentLoaded", async function () {
           "activity-card";
 
 
+        /* TITLE */
+
         const title =
           document.createElement(
             "h3"
           );
 
         title.textContent =
-          item.title || "";
+          item.content || "";
 
+
+        /* CONTENT */
 
         const content =
           document.createElement(
@@ -1716,8 +1688,10 @@ document.addEventListener("DOMContentLoaded", async function () {
           );
 
         content.textContent =
-          item.content || "";
+          item.content_zh || "";
 
+
+        /* DATE */
 
         const date =
           document.createElement(
@@ -1734,24 +1708,25 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
           date.textContent =
-            language === "zh"
-              ? "更新于 " +
-                dateObject.toLocaleString(
-                  "zh-CN"
-                )
-              : "Updated " +
-                dateObject.toLocaleString(
-                  "en-US"
-                );
+            "更新于 " +
+            dateObject.toLocaleString(
+              "zh-CN"
+            );
 
         }
 
 
-        card.appendChild(title);
+        card.appendChild(
+          title
+        );
 
-        card.appendChild(content);
+        card.appendChild(
+          content
+        );
 
-        card.appendChild(date);
+        card.appendChild(
+          date
+        );
 
 
         activityList.appendChild(
@@ -1794,19 +1769,37 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       if (currentActivity) {
 
-        activityTitleInput.value =
-          currentActivity.title || "";
+        if (activityTitleInput) {
 
-        activityContentInput.value =
-          currentActivity.content || "";
+          activityTitleInput.value =
+            currentActivity.content || "";
+
+        }
+
+
+        if (activityContentInput) {
+
+          activityContentInput.value =
+            currentActivity.content_zh || "";
+
+        }
 
       } else {
 
-        activityTitleInput.value =
-          "";
+        if (activityTitleInput) {
 
-        activityContentInput.value =
-          "";
+          activityTitleInput.value =
+            "";
+
+        }
+
+
+        if (activityContentInput) {
+
+          activityContentInput.value =
+            "";
+
+        }
 
       }
 
@@ -1863,11 +1856,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
       const title =
-        activityTitleInput.value.trim();
+        activityTitleInput
+          ? activityTitleInput.value.trim()
+          : "";
 
 
       const content =
-        activityContentInput.value.trim();
+        activityContentInput
+          ? activityContentInput.value.trim()
+          : "";
 
 
       if (!title) {
@@ -1887,7 +1884,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         alert(
           language === "zh"
-            ? "请输入内容。"
+            ? "请输入动态内容。"
             : "Please enter some content."
         );
 
@@ -1911,6 +1908,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       /* =========================================
          EXISTING UPDATE
+         content = TITLE
+         content_zh = CONTENT
       ========================================= */
 
       if (currentActivity) {
@@ -1920,10 +1919,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             .from("site_updates")
             .update({
 
-              title:
+              content:
                 title,
 
-              content:
+              content_zh:
                 content,
 
               updated_at:
@@ -1939,6 +1938,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       }
 
+
       /* =========================================
          FIRST UPDATE
       ========================================= */
@@ -1950,11 +1950,14 @@ document.addEventListener("DOMContentLoaded", async function () {
             .from("site_updates")
             .insert({
 
-              title:
+              content:
                 title,
 
-              content:
-                content
+              content_zh:
+                content,
+
+              updated_at:
+                new Date().toISOString()
 
             })
             .select();
