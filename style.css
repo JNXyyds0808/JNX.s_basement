@@ -4268,3 +4268,33 @@ body.dark-mode
   }
 
 }
+
+/* =========================================
+   iOS / iPad Keyboard Viewport Fix
+   只修复键盘导致的页面跳动
+========================================= */
+
+@media (max-width: 700px) {
+
+  .page {
+    min-height: 100dvh;
+    min-height: 100vh;
+  }
+
+  .login-modal,
+  .profile-modal,
+  .settings-modal,
+  .username-modal,
+  .password-modal {
+    height: 100dvh;
+    height: 100vh;
+  }
+
+  input,
+  textarea {
+    font-size: 16px;
+  }
+
+}
+
+
