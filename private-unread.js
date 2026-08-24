@@ -32,7 +32,7 @@
       if (!badge) {
         badge = document.createElement("span");
         badge.className = "jnx-private-user-badge";
-        badge.style.cssText = "display:none;margin-left:auto;flex:0 0 auto;min-width:17px;height:17px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#e53935;color:#fff;font:700 10px/17px Arial,sans-serif;text-align:center";
+        badge.style.cssText = "display:none;margin-left:8px;flex:0 0 auto;min-width:17px;height:17px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#e53935;color:#fff;font:700 10px/17px Arial,sans-serif;text-align:center;vertical-align:middle;transform:none";
         button.appendChild(badge);
       }
       return badge;
@@ -143,11 +143,7 @@
 
     db.channel("jnx-private-unread")
       .on("postgres_changes",{event:"INSERT",schema:"public",table:"private_messages"},async payload=>{
-        if (user && payload.new?.sender_id !== user.id) {
-          const modal=document.getElementById("jnxPrivateModal");
-          if (modal?.classList.contains("active")) { await refresh(); }
-          else { await refresh(); }
-        }
+        if (user && payload.new?.sender_id !== user.id) await refresh();
       })
       .on("postgres_changes",{event:"UPDATE",schema:"public",table:"private_message_reads"},payload=>{ if(user&&payload.new?.user_id===user.id) refresh(); })
       .subscribe();
