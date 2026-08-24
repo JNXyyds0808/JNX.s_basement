@@ -3882,3 +3882,389 @@ section p {
   }
 
 }
+
+/* =====================================================
+   VIEW ALL UPDATES
+===================================================== */
+
+.view-all-updates-button {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  margin-top: 24px;
+
+  padding: 11px 18px;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: inherit;
+
+  font-size: 14px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
+
+}
+
+
+.view-all-updates-button:hover {
+
+  background: rgba(0, 0, 0, 0.05);
+
+  border-color: rgba(0, 0, 0, 0.2);
+
+  transform: translateY(-1px);
+
+}
+
+
+
+/* =====================================================
+   ALL UPDATES MODAL
+===================================================== */
+
+.all-updates-modal {
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 24px;
+
+  opacity: 0;
+
+  visibility: hidden;
+
+  pointer-events: none;
+
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease;
+
+}
+
+
+.all-updates-modal.active {
+
+  opacity: 1;
+
+  visibility: visible;
+
+  pointer-events: auto;
+
+}
+
+
+
+/* =====================================================
+   OVERLAY
+===================================================== */
+
+.all-updates-overlay {
+
+  position: absolute;
+
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.45);
+
+  backdrop-filter: blur(6px);
+
+}
+
+
+
+/* =====================================================
+   BOX
+===================================================== */
+
+.all-updates-box {
+
+  position: relative;
+
+  width: min(680px, 100%);
+
+  max-height: 80vh;
+
+  overflow-y: auto;
+
+  padding: 32px;
+
+  border-radius: 20px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.2);
+
+  transform: translateY(15px) scale(0.98);
+
+  transition:
+    transform 0.25s ease;
+
+}
+
+
+.all-updates-modal.active
+.all-updates-box {
+
+  transform:
+    translateY(0)
+    scale(1);
+
+}
+
+
+
+/* =====================================================
+   CLOSE
+===================================================== */
+
+.all-updates-close {
+
+  position: absolute;
+
+  top: 16px;
+
+  right: 18px;
+
+  width: 36px;
+
+  height: 36px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: inherit;
+
+  font-size: 26px;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease;
+
+}
+
+
+.all-updates-close:hover {
+
+  background:
+    rgba(0, 0, 0, 0.07);
+
+}
+
+
+
+/* =====================================================
+   TITLE
+===================================================== */
+
+.all-updates-title {
+
+  margin: 0;
+
+  padding-right: 40px;
+
+  font-size: 28px;
+
+}
+
+
+.all-updates-subtitle {
+
+  margin-top: 8px;
+
+  margin-bottom: 26px;
+
+  opacity: 0.6;
+
+  font-size: 14px;
+
+}
+
+
+
+/* =====================================================
+   LIST
+===================================================== */
+
+.all-updates-list {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 16px;
+
+}
+
+
+
+/* =====================================================
+   HISTORY CARD
+===================================================== */
+
+.all-update-card {
+
+  padding: 18px;
+
+  border: 1px solid
+    rgba(0, 0, 0, 0.08);
+
+  border-radius: 14px;
+
+  background:
+    rgba(0, 0, 0, 0.025);
+
+}
+
+
+.all-update-card h3 {
+
+  margin: 0 0 8px;
+
+  font-size: 17px;
+
+}
+
+
+.all-update-card p {
+
+  margin: 0 0 12px;
+
+  line-height: 1.7;
+
+  white-space: pre-wrap;
+
+}
+
+
+.all-update-card small {
+
+  opacity: 0.5;
+
+  font-size: 12px;
+
+}
+
+
+
+/* =====================================================
+   DARK MODE
+===================================================== */
+
+body.dark-mode
+.view-all-updates-button {
+
+  border-color:
+    rgba(255, 255, 255, 0.15);
+
+}
+
+
+body.dark-mode
+.view-all-updates-button:hover {
+
+  background:
+    rgba(255, 255, 255, 0.08);
+
+  border-color:
+    rgba(255, 255, 255, 0.25);
+
+}
+
+
+body.dark-mode
+.all-updates-box {
+
+  background: #181818;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.5);
+
+}
+
+
+body.dark-mode
+.all-update-card {
+
+  border-color:
+    rgba(255, 255, 255, 0.1);
+
+  background:
+    rgba(255, 255, 255, 0.04);
+
+}
+
+
+body.dark-mode
+.all-updates-close:hover {
+
+  background:
+    rgba(255, 255, 255, 0.08);
+
+}
+
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 600px) {
+
+  .all-updates-modal {
+
+    padding: 14px;
+
+  }
+
+
+  .all-updates-box {
+
+    max-height: 88vh;
+
+    padding: 24px 18px;
+
+    border-radius: 16px;
+
+  }
+
+
+  .all-updates-title {
+
+    font-size: 24px;
+
+  }
+
+}
