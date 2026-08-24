@@ -1,0 +1,36 @@
+name: Fix activity history
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch activity logic
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('script.js')
+          s=p.read_text()
+          old='''      if (currentActivity) {\n\n        if (activityTitleInput) {\n\n          activityTitleInput.value =\n            currentActivity.content || "";\n\n        }\n\n\n        if (activityContentInput) {\n\n          activityContentInput.value =\n            currentActivity.content_zh || "";\n\n        }\n\n      } else {'''
+          new='''      if (currentActivity) {\n\n        if (activityTitleInput) {\n\n          activityTitleInput.value =\n            currentActivity.title || "";\n\n        }\n\n\n        if (activityContentInput) {\n\n          activityContentInput.value =\n            currentActivity.content || "";\n\n        }\n\n      } else {'''
+          if old not in s: raise SystemExit('admin input block not found')
+          s=s.replace(old,new,1)
+          start=s.index('      /* =========================================\n         EXISTING UPDATE')
+          end=s.index('\n\n\n      adminActivitySave.disabled =', start)
+          replacement='''      /* =========================================\n         ALWAYS CREATE A NEW UPDATE\n         title = TITLE\n         content = CONTENT\n      ========================================= */\n\n      result =\n        await db\n          .from("site_updates")\n          .insert({\n\n            title:\n              title,\n\n            content:\n              content,\n\n            updated_at:\n              new Date().toISOString()\n\n          })\n          .select();'''
+          s=s[:start]+replacement+s[end:]
+          p.write_text(s)
+          PY
+      - name: Commit fix and remove workflow
+        run: |
+          rm .github/workflows/fix-activity.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add script.js .github/workflows/fix-activity.yml
+          git diff --cached --quiet || git commit -m "Fix activity history inserts"
+          git push
