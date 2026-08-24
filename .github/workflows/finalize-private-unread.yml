@@ -1,0 +1,80 @@
+name: Finalize private unread integration
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Integrate loader without replacing existing code
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('mentions.js')
+          s = p.read_text(encoding='utf-8')
+          marker = '/* JNX_PRIVATE_UNREAD_LOADER */'
+          if marker not in s:
+              s += r'''
+
+/* JNX_PRIVATE_UNREAD_LOADER */
+(function () {
+  function init() {
+    if (!document.getElementById('jnxPrivateUnreadScript')) {
+      const script = document.createElement('script');
+      script.id = 'jnxPrivateUnreadScript';
+      script.src = 'private-unread.js?v=2';
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+    if (!document.getElementById('jnxChatLoginNotice')) {
+      const buttons = document.querySelector('.buttons');
+      if (buttons) {
+        const notice = document.createElement('p');
+        notice.id = 'jnxChatLoginNotice';
+        notice.textContent = '登录后才可查看聊天';
+        notice.style.cssText = 'margin-top:14px;color:#888;font-size:13px;';
+        buttons.insertAdjacentElement('afterend', notice);
+        if (window.supabase?.createClient) {
+          const db = window.supabase.createClient(
+            'https://qdehfgjifhtczkrpuadl.supabase.co',
+            'sb_publishable_ChrvUYG2OES6q2kCpkBJcA_uaAmfOVp'
+          );
+          const update = async () => {
+            const { data } = await db.auth.getUser();
+            notice.style.display = data?.user ? 'none' : 'block';
+          };
+          update();
+          db.auth.onAuthStateChange(update);
+        }
+      }
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else init();
+})();
+'''
+              p.write_text(s, encoding='utf-8')
+          PY
+
+          test -f private-unread.js
+          grep -q 'JNX_PRIVATE_UNREAD_LOADER' mentions.js
+          grep -q 'private-unread.js' mentions.js
+
+      - name: Commit integration and clean up
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          rm -f .github/workflows/finalize-private-unread.yml .github/workflows/attach-private-unread.yml
+          git add mentions.js .github/workflows/finalize-private-unread.yml .github/workflows/attach-private-unread.yml
+          git diff --cached --quiet || git commit -m "Finalize private chat unread integration"
+          git push
