@@ -106,21 +106,29 @@
       #jnxPrivateModal.active { opacity:1; visibility:visible; pointer-events:auto; }
       .jnx-private-overlay { position:absolute; inset:0; background:rgba(0,0,0,.74); backdrop-filter:blur(8px); }
       .jnx-private-box { position:relative; z-index:2; width:min(620px,94vw); height:min(680px,88vh); display:flex; flex-direction:column; background:rgba(18,16,30,.98); border:1px solid rgba(255,255,255,.12); border-radius:24px; overflow:hidden; box-shadow:0 25px 80px rgba(0,0,0,.55); }
-      .jnx-private-header { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); }
+      .jnx-private-header { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); flex-shrink:0; }
       .jnx-private-header h2 { color:#fff; margin:0; font-size:20px; }
       .jnx-private-header p { color:#777; margin:4px 0 0; font-size:12px; }
       .jnx-private-close { border:0; background:transparent; color:#888; font-size:28px; cursor:pointer; }
-      .jnx-private-messages { flex:1; min-height:0; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:10px; }
+      .jnx-private-messages { flex:1; min-height:0; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:10px; -webkit-overflow-scrolling:touch; }
       .jnx-private-message { max-width:78%; padding:10px 13px; border-radius:16px; background:rgba(255,255,255,.07); align-self:flex-start; }
       .jnx-private-message.mine { align-self:flex-end; background:rgba(255,255,255,.13); }
       .jnx-private-content { color:#fff; white-space:pre-wrap; word-break:break-word; line-height:1.55; font-size:15px; }
       .jnx-private-time { color:#666; font-size:10px; margin-top:5px; }
       .jnx-private-empty { color:#777; margin:auto; text-align:center; }
-      .jnx-private-footer { display:flex; gap:10px; padding:12px; border-top:1px solid rgba(255,255,255,.08); }
-      .jnx-private-input { flex:1; min-width:0; resize:none; height:46px; max-height:120px; padding:12px 14px; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.05); color:#fff; outline:none; font:inherit; }
-      .jnx-private-send { border:0; border-radius:14px; padding:0 18px; background:#fff; color:#111; font-weight:600; cursor:pointer; }
+      .jnx-private-footer { display:flex; gap:10px; padding:12px; padding-bottom:max(12px, env(safe-area-inset-bottom)); border-top:1px solid rgba(255,255,255,.08); flex-shrink:0; background:rgba(18,16,30,.99); position:relative; z-index:3; }
+      .jnx-private-input { flex:1; min-width:0; resize:none; height:46px; max-height:120px; padding:12px 14px; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.05); color:#fff; outline:none; font:inherit; font-size:16px; -webkit-appearance:none; appearance:none; }
+      .jnx-private-send { border:0; border-radius:14px; padding:0 18px; min-height:46px; background:#fff; color:#111; font-weight:600; cursor:pointer; flex-shrink:0; }
       .jnx-private-send:disabled { opacity:.5; }
-      @media(max-width:600px){ #jnxPrivateModal{align-items:flex-end;} .jnx-private-box{width:100vw;height:88dvh;height:88vh;border-radius:20px 20px 0 0;} .jnx-private-message{max-width:88%;} }
+      @media(max-width:600px){
+        #jnxPrivateModal { align-items:flex-end; }
+        .jnx-private-box { width:100vw; max-width:100vw; height:100dvh; max-height:100dvh; height:-webkit-fill-available; min-height:0; border-radius:18px 18px 0 0; }
+        .jnx-private-messages { padding:14px; min-height:0; }
+        .jnx-private-message { max-width:88%; }
+        .jnx-private-footer { padding:8px 10px; padding-bottom:max(8px, env(safe-area-inset-bottom)); gap:8px; }
+        .jnx-private-input { height:44px; min-height:44px; }
+        .jnx-private-send { min-height:44px; padding:0 15px; }
+      }
     `;
     document.head.appendChild(css);
 
