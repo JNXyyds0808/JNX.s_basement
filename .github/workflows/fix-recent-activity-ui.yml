@@ -1,0 +1,191 @@
+name: Fix Recent Activity UI
+
+on:
+  push:
+    branches:
+      - fix/recent-activity-ui
+
+permissions:
+  contents: write
+
+jobs:
+  patch-ui:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add Recent Activity UI styles
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          css = Path('style.css')
+          text = css.read_text(encoding='utf-8')
+
+          if '/* JNX RECENT ACTIVITY UI V2 */' not in text:
+              text += r'''
+
+/* JNX RECENT ACTIVITY UI V2 */
+
+.activity-card {
+  padding: 22px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.activity-card h3 {
+  color: #ffffff;
+  font-size: 22px;
+  margin-bottom: 9px;
+}
+
+.activity-card p {
+  color: #aaa;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.activity-card small {
+  display: block;
+  margin-top: 10px;
+  color: #666;
+  font-size: 12px;
+}
+
+.view-all-updates-button {
+  margin-top: 24px;
+  padding: 11px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.25s ease;
+  backdrop-filter: blur(10px);
+}
+
+.view-all-updates-button:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.all-updates-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.25s ease;
+  z-index: 200;
+}
+
+.all-updates-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.all-updates-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.70);
+  backdrop-filter: blur(8px);
+}
+
+.all-updates-box {
+  position: relative;
+  z-index: 2;
+  width: min(720px, 90%);
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  background: rgba(18, 16, 30, 0.95);
+  backdrop-filter: blur(25px);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.50);
+}
+
+.all-updates-close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  border: none;
+  background: transparent;
+  color: #888;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.all-updates-close:hover {
+  color: #fff;
+}
+
+.all-updates-title {
+  color: #ffffff;
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.all-updates-subtitle {
+  color: #888;
+  margin-bottom: 20px;
+}
+
+.all-update-card {
+  padding: 20px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.all-update-card h3 {
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.all-update-card p {
+  color: #aaa;
+  line-height: 1.7;
+}
+
+.all-update-card small {
+  display: block;
+  margin-top: 10px;
+  color: #666;
+}
+
+@media (max-width: 600px) {
+  .all-updates-box {
+    width: 92%;
+    padding: 28px 22px;
+  }
+
+  .all-updates-title {
+    font-size: 26px;
+  }
+}
+'''
+              css.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit UI changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add style.css
+          if git diff --cached --quiet; then
+            echo "No CSS changes needed."
+          else
+            git commit -m "Fix recent activity UI styling"
+            git push
+          fi
+
+      - name: Remove temporary workflow
+        run: |
+          git rm .github/workflows/fix-recent-activity-ui.yml
+          git commit -m "Remove temporary UI patch workflow"
+          git push
