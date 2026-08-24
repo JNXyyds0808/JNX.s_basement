@@ -2119,7 +2119,7 @@ function closeAllUpdatesModal() {
         if (activityTitleInput) {
 
           activityTitleInput.value =
-            currentActivity.content || "";
+            currentActivity.title || "";
 
         }
 
@@ -2127,7 +2127,7 @@ function closeAllUpdatesModal() {
         if (activityContentInput) {
 
           activityContentInput.value =
-            currentActivity.content_zh || "";
+            currentActivity.content || "";
 
         }
 
@@ -2254,62 +2254,27 @@ function closeAllUpdatesModal() {
 
 
       /* =========================================
-         EXISTING UPDATE
-         content = TITLE
-         content_zh = CONTENT
+         ALWAYS CREATE A NEW UPDATE
+         title = TITLE
+         content = CONTENT
       ========================================= */
 
-      if (currentActivity) {
+      result =
+        await db
+          .from("site_updates")
+          .insert({
 
-        result =
-          await db
-            .from("site_updates")
-            .update({
+            title:
+              title,
 
-              content:
-                title,
+            content:
+              content,
 
-              content_zh:
-                content,
+            updated_at:
+              new Date().toISOString()
 
-              updated_at:
-                new Date().toISOString()
-
-            })
-            .eq(
-              "id",
-              currentActivity.id
-            )
-            .select();
-
-
-      }
-
-
-      /* =========================================
-         FIRST UPDATE
-      ========================================= */
-
-      else {
-
-        result =
-          await db
-            .from("site_updates")
-            .insert({
-
-              content:
-                title,
-
-              content_zh:
-                content,
-
-              updated_at:
-                new Date().toISOString()
-
-            })
-            .select();
-
-      }
+          })
+          .select();
 
 
       adminActivitySave.disabled =
