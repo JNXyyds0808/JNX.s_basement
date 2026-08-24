@@ -1558,186 +1558,533 @@ document.addEventListener("DOMContentLoaded", async function () {
   );
 
 
+/* =====================================================
+   RECENT ACTIVITY
+===================================================== */
 
-  /* =====================================================
-     RECENT ACTIVITY
-     DATABASE:
-     content = TITLE
-     content_zh = CHINESE CONTENT
-  ====================================================== */
+async function loadSiteUpdates() {
 
-  async function loadSiteUpdates() {
-
-    if (!activityList) {
-      return;
-    }
+  if (!activityList) {
+    return;
+  }
 
 
-    if (activityLoading) {
+  if (activityLoading) {
 
-      activityLoading.style.display =
-        "block";
+    activityLoading.style.display =
+      "block";
 
-    }
-
-
-    const result =
-      await db
-        .from("site_updates")
-        .select(
-          "id, content, content_zh, updated_at"
-        )
-        .order(
-          "updated_at",
-          {
-            ascending: false
-          }
-        )
-        .limit(10);
+  }
 
 
-    if (activityLoading) {
-
-      activityLoading.style.display =
-        "none";
-
-    }
-
-
-    if (result.error) {
-
-      console.error(
-        "Site updates error:",
-        result.error
+  const result =
+    await db
+      .from("site_updates")
+      .select(
+        "id, title, content, updated_at"
+      )
+      .order(
+        "updated_at",
+        {
+          ascending: false
+        }
       );
 
-      activityList.innerHTML = "";
 
-      const errorElement =
-        document.createElement("p");
+  if (activityLoading) {
 
-      errorElement.textContent =
-        "动态暂时无法加载。";
+    activityLoading.style.display =
+      "none";
 
-      activityList.appendChild(
-        errorElement
-      );
+  }
 
-      return;
 
-    }
+  if (result.error) {
 
+    console.error(
+      "Site updates error:",
+      result.error
+    );
 
     activityList.innerHTML = "";
 
+    const errorElement =
+      document.createElement("p");
 
-    if (
-      !result.data ||
-      result.data.length === 0
-    ) {
+    errorElement.textContent =
+      language === "zh"
+        ? "动态暂时无法加载。"
+        : "Updates could not be loaded.";
 
-      const empty =
-        document.createElement("p");
+    activityList.appendChild(
+      errorElement
+    );
 
-      empty.textContent =
-        "暂时还没有动态。";
+    return;
 
-      activityList.appendChild(
-        empty
+  }
+
+
+  activityList.innerHTML = "";
+
+
+  const updates =
+    result.data || [];
+
+
+  /* =====================================================
+     没有动态
+  ===================================================== */
+
+  if (updates.length === 0) {
+
+    const empty =
+      document.createElement("p");
+
+    empty.textContent =
+      language === "zh"
+        ? "暂时还没有动态。"
+        : "No updates yet.";
+
+    activityList.appendChild(
+      empty
+    );
+
+    currentActivity = null;
+
+    return;
+
+  }
+
+
+  /* =====================================================
+     保存最新动态
+  ===================================================== */
+
+  currentActivity =
+    updates[0];
+
+
+  /* =====================================================
+     只显示最新三条
+  ===================================================== */
+
+  const recentUpdates =
+    updates.slice(0, 3);
+
+
+  recentUpdates.forEach(
+    function (item) {
+
+      const card =
+        document.createElement(
+          "article"
+        );
+
+      card.className =
+        "activity-card";
+
+
+      const title =
+        document.createElement(
+          "h3"
+        );
+
+      title.textContent =
+        item.title || "";
+
+
+      const content =
+        document.createElement(
+          "p"
+        );
+
+      content.textContent =
+        item.content || "";
+
+
+      const date =
+        document.createElement(
+          "small"
+        );
+
+
+      if (item.updated_at) {
+
+        const dateObject =
+          new Date(
+            item.updated_at
+          );
+
+
+        date.textContent =
+          language === "zh"
+            ? "更新于 " +
+              dateObject.toLocaleString(
+                "zh-CN"
+              )
+            : "Updated " +
+              dateObject.toLocaleString(
+                "en-US"
+              );
+
+      }
+
+
+      card.appendChild(
+        title
       );
 
-      currentActivity = null;
+      card.appendChild(
+        content
+      );
 
-      return;
+      card.appendChild(
+        date
+      );
+
+
+      activityList.appendChild(
+        card
+      );
 
     }
+  );
 
 
-    currentActivity =
-      result.data[0];
+  /* =====================================================
+     查看全部动态按钮
+  ===================================================== */
+
+  if (updates.length > 3) {
+
+    const viewAllButton =
+      document.createElement(
+        "button"
+      );
+
+    viewAllButton.className =
+      "view-all-updates-button";
 
 
-    result.data.forEach(
-      function (item) {
-
-        const card =
-          document.createElement(
-            "article"
-          );
-
-        card.className =
-          "activity-card";
+    viewAllButton.textContent =
+      language === "zh"
+        ? "查看全部动态 →"
+        : "View all updates →";
 
 
-        /* TITLE */
+    viewAllButton.addEventListener(
+      "click",
+      function () {
 
-        const title =
-          document.createElement(
-            "h3"
-          );
-
-        title.textContent =
-          item.content || "";
-
-
-        /* CONTENT */
-
-        const content =
-          document.createElement(
-            "p"
-          );
-
-        content.textContent =
-          item.content_zh || "";
-
-
-        /* DATE */
-
-        const date =
-          document.createElement(
-            "small"
-          );
-
-
-        if (item.updated_at) {
-
-          const dateObject =
-            new Date(
-              item.updated_at
-            );
-
-
-          date.textContent =
-            "更新于 " +
-            dateObject.toLocaleString(
-              "zh-CN"
-            );
-
-        }
-
-
-        card.appendChild(
-          title
-        );
-
-        card.appendChild(
-          content
-        );
-
-        card.appendChild(
-          date
-        );
-
-
-        activityList.appendChild(
-          card
+        openAllUpdatesModal(
+          updates
         );
 
       }
     );
 
+
+    activityList.appendChild(
+      viewAllButton
+    );
+
   }
 
+}
+
+
+
+/* =====================================================
+   ALL UPDATES MODAL
+===================================================== */
+
+function openAllUpdatesModal(
+  updates
+) {
+
+  let modal =
+    document.getElementById(
+      "allUpdatesModal"
+    );
+
+
+  /* =====================================================
+     第一次打开时创建 Modal
+  ===================================================== */
+
+  if (!modal) {
+
+    modal =
+      document.createElement(
+        "div"
+      );
+
+    modal.id =
+      "allUpdatesModal";
+
+    modal.className =
+      "all-updates-modal";
+
+
+    const overlay =
+      document.createElement(
+        "div"
+      );
+
+    overlay.className =
+      "all-updates-overlay";
+
+
+    const box =
+      document.createElement(
+        "div"
+      );
+
+    box.className =
+      "all-updates-box";
+
+
+    const close =
+      document.createElement(
+        "button"
+      );
+
+    close.className =
+      "all-updates-close";
+
+    close.textContent =
+      "×";
+
+
+    close.addEventListener(
+      "click",
+      function () {
+
+        closeAllUpdatesModal();
+
+      }
+    );
+
+
+    overlay.addEventListener(
+      "click",
+      function () {
+
+        closeAllUpdatesModal();
+
+      }
+    );
+
+
+    const title =
+      document.createElement(
+        "h2"
+      );
+
+    title.className =
+      "all-updates-title";
+
+
+    const subtitle =
+      document.createElement(
+        "p"
+      );
+
+    subtitle.className =
+      "all-updates-subtitle";
+
+
+    const list =
+      document.createElement(
+        "div"
+      );
+
+    list.className =
+      "all-updates-list";
+
+    list.id =
+      "allUpdatesList";
+
+
+    box.appendChild(
+      close
+    );
+
+    box.appendChild(
+      title
+    );
+
+    box.appendChild(
+      subtitle
+    );
+
+    box.appendChild(
+      list
+    );
+
+
+    modal.appendChild(
+      overlay
+    );
+
+    modal.appendChild(
+      box
+    );
+
+
+    document.body.appendChild(
+      modal
+    );
+
+  }
+
+
+  const title =
+    modal.querySelector(
+      ".all-updates-title"
+    );
+
+
+  const subtitle =
+    modal.querySelector(
+      ".all-updates-subtitle"
+    );
+
+
+  const list =
+    document.getElementById(
+      "allUpdatesList"
+    );
+
+
+  title.textContent =
+    language === "zh"
+      ? "全部动态"
+      : "All Updates";
+
+
+  subtitle.textContent =
+    language === "zh"
+      ? "JNX 的所有历史动态"
+      : "All updates from JNX";
+
+
+  list.innerHTML = "";
+
+
+  /* =====================================================
+     显示所有历史动态
+  ===================================================== */
+
+  updates.forEach(
+    function (item) {
+
+      const card =
+        document.createElement(
+          "article"
+        );
+
+      card.className =
+        "all-update-card";
+
+
+      const cardTitle =
+        document.createElement(
+          "h3"
+        );
+
+      cardTitle.textContent =
+        item.title || "";
+
+
+      const cardContent =
+        document.createElement(
+          "p"
+        );
+
+      cardContent.textContent =
+        item.content || "";
+
+
+      const cardDate =
+        document.createElement(
+          "small"
+        );
+
+
+      if (item.updated_at) {
+
+        const dateObject =
+          new Date(
+            item.updated_at
+          );
+
+
+        cardDate.textContent =
+          language === "zh"
+            ? "更新于 " +
+              dateObject.toLocaleString(
+                "zh-CN"
+              )
+            : "Updated " +
+              dateObject.toLocaleString(
+                "en-US"
+              );
+
+      }
+
+
+      card.appendChild(
+        cardTitle
+      );
+
+      card.appendChild(
+        cardContent
+      );
+
+      card.appendChild(
+        cardDate
+      );
+
+
+      list.appendChild(
+        card
+      );
+
+    }
+  );
+
+
+  modal.classList.add(
+    "active"
+  );
+
+}
+
+
+
+/* =====================================================
+   CLOSE ALL UPDATES
+===================================================== */
+
+function closeAllUpdatesModal() {
+
+  const modal =
+    document.getElementById(
+      "allUpdatesModal"
+    );
+
+
+  if (modal) {
+
+    modal.classList.remove(
+      "active"
+    );
+
+  }
+
+}
 
 
   /* =====================================================
