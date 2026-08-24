@@ -1,4 +1,4 @@
-name: Patch activity UI
+name: Complete recent activity UI patch
 on:
   push:
     branches: [main]
@@ -10,48 +10,264 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Patch files
+
+      - name: Patch activity UI
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('script.js')
-          s=p.read_text()
+          import re
 
-          # Make the activity query use the actual title/content columns.
-          s=s.replace('''        .select(\n          "id, content, content_zh, content_en, updated_at"\n        )''','''        .select(\n          "id, title, content, updated_at"\n        )''')
-          s=s.replace('''        .select(\n          "id, content, content_zh, updated_at"\n        )''','''        .select(\n          "id, title, content, updated_at"\n        )''')
+          # -----------------------------
+          # script.js
+          # -----------------------------
+          p = Path('script.js')
+          s = p.read_text()
 
-          # Replace the activity rendering block while preserving the rest of the app.
-          marker='''    activityList.innerHTML = "";\n\n\n    if (\n      !result.data ||\n      result.data.length === 0\n    ) {'''
-          if marker not in s:
-              raise SystemExit('activity render marker not found')
+          s = re.sub(
+              r'\.select\(\s*"id,\s*(?:content,\s*content_zh,\s*content_en|content_zh),\s*updated_at"\s*\)',
+              '.select("id, title, content, updated_at")',
+              s
+          )
 
-          start=s.index(marker)
-          end=s.index('''\n\n\n  /* =====================================================\n     ALL UPDATES MODAL''', start) if '/* =====================================================\n     ALL UPDATES MODAL' in s[start:] else -1
-          if end == -1:
-              # Find the next ADMIN EDIT BUTTON section as a fallback.
-              end=s.index('''\n\n\n  /* =====================================================\n     ADMIN EDIT BUTTON''', start)
+          marker = '    activityList.innerHTML = "";'
+          start = s.find(marker)
+          admin_marker = '  /* =====================================================\n     ADMIN EDIT BUTTON'
+          end = s.find(admin_marker, start)
+          if start == -1 or end == -1:
+              raise SystemExit('Could not find activity rendering section')
 
-          new_block='''    activityList.innerHTML = "";\n\n\n    if (!result.data || result.data.length === 0) {\n\n      const empty = document.createElement("p");\n      empty.textContent = language === "zh"\n        ? "暂时还没有动态。"\n        : "No updates yet.";\n      activityList.appendChild(empty);\n      return;\n    }\n\n\n    currentActivity = result.data[0];\n\n    const updates = result.data;\n\n    updates.slice(0, 3).forEach(function (item) {\n\n      const card = document.createElement("article");\n      card.className = "activity-card";\n\n      const title = document.createElement("h3");\n      title.textContent = item.title || "";\n\n      const content = document.createElement("p");\n      content.textContent = item.content || "";\n\n      const date = document.createElement("small");\n      if (item.updated_at) {\n        const dateObject = new Date(item.updated_at);\n        date.textContent = language === "zh"\n          ? "更新于 " + dateObject.toLocaleString("zh-CN")\n          : "Updated " + dateObject.toLocaleString("en-US");\n      }\n\n      card.appendChild(title);\n      card.appendChild(content);\n      card.appendChild(date);\n      activityList.appendChild(card);\n    });\n\n    if (updates.length > 3) {\n      const moreButton = document.createElement("button");\n      moreButton.className = "activity-more-button";\n      moreButton.textContent = language === "zh"\n        ? "查看更多  →"\n        : "View all updates  →";\n      moreButton.addEventListener("click", function () {\n        openAllUpdatesModal(updates);\n      });\n      activityList.appendChild(moreButton);\n    }'''
-          s=s[:start]+new_block+s[end:]
+          block = r'''    activityList.innerHTML = "";
 
-          # Ensure the admin editor uses title/content.
-          s=s.replace('''activityTitleInput.value =\n            currentActivity.content || "";''','''activityTitleInput.value =\n            currentActivity.title || "";''')
-          s=s.replace('''activityContentInput.value =\n            currentActivity.content_zh || "";''','''activityContentInput.value =\n            currentActivity.content || "";''')
+
+    if (!result.data || result.data.length === 0) {
+
+      const empty = document.createElement("p");
+
+      empty.textContent = language === "zh"
+        ? "暂时还没有动态。"
+        : "No updates yet.";
+
+      activityList.appendChild(empty);
+
+      currentActivity = null;
+
+      return;
+
+    }
+
+
+    currentActivity = result.data[0];
+
+    const updates = result.data;
+
+
+    updates.slice(0, 3).forEach(function (item) {
+
+      const card = document.createElement("article");
+
+      card.className = "activity-card";
+
+
+      const title = document.createElement("h3");
+
+      title.textContent = item.title || "";
+
+
+      const content = document.createElement("p");
+
+      content.textContent = item.content || "";
+
+
+      const date = document.createElement("small");
+
+      if (item.updated_at) {
+
+        const dateObject = new Date(item.updated_at);
+
+        date.textContent = language === "zh"
+          ? "更新于 " + dateObject.toLocaleString("zh-CN")
+          : "Updated " + dateObject.toLocaleString("en-US");
+
+      }
+
+
+      card.appendChild(title);
+
+      card.appendChild(content);
+
+      card.appendChild(date);
+
+      activityList.appendChild(card);
+
+    });
+
+
+    if (updates.length > 3) {
+
+      const moreButton = document.createElement("button");
+
+      moreButton.className = "activity-more-button";
+
+      moreButton.textContent = language === "zh"
+        ? "查看更多  →"
+        : "View all updates  →";
+
+      moreButton.addEventListener("click", function () {
+
+        openAllUpdatesModal(updates);
+
+      });
+
+      activityList.appendChild(moreButton);
+
+    }
+
+
+'''
+          s = s[:start] + block + s[end:]
+
+          # Insert the history modal controller once.
+          if 'function openAllUpdatesModal(' not in s:
+              fn = r'''  /* =====================================================
+     ALL UPDATES MODAL
+  ====================================================== */
+
+  const allUpdatesModal =
+    document.getElementById("allUpdatesModal");
+
+  const allUpdatesOverlay =
+    document.getElementById("allUpdatesOverlay");
+
+  const allUpdatesClose =
+    document.getElementById("allUpdatesClose");
+
+  const allUpdatesList =
+    document.getElementById("allUpdatesList");
+
+
+  function closeAllUpdatesModal() {
+
+    allUpdatesModal?.classList.remove("active");
+
+  }
+
+
+  function openAllUpdatesModal(updates) {
+
+    if (!allUpdatesModal || !allUpdatesList) {
+      return;
+    }
+
+    allUpdatesList.innerHTML = "";
+
+    (updates || []).forEach(function (item) {
+
+      const card = document.createElement("article");
+
+      card.className = "all-update-card";
+
+      const title = document.createElement("h3");
+
+      title.textContent = item.title || "";
+
+      const content = document.createElement("p");
+
+      content.textContent = item.content || "";
+
+      const date = document.createElement("small");
+
+      if (item.updated_at) {
+
+        const dateObject = new Date(item.updated_at);
+
+        date.textContent = language === "zh"
+          ? "更新于 " + dateObject.toLocaleString("zh-CN")
+          : "Updated " + dateObject.toLocaleString("en-US");
+
+      }
+
+      card.appendChild(title);
+
+      card.appendChild(content);
+
+      card.appendChild(date);
+
+      allUpdatesList.appendChild(card);
+
+    });
+
+    allUpdatesModal.classList.add("active");
+
+  }
+
+
+  allUpdatesClose?.addEventListener(
+    "click",
+    closeAllUpdatesModal
+  );
+
+
+  allUpdatesOverlay?.addEventListener(
+    "click",
+    closeAllUpdatesModal
+  );
+
+
+'''
+              s = s.replace(admin_marker, fn + admin_marker, 1)
+
+          # Keep the admin editor paired with title/content columns.
+          s = s.replace(
+              'activityTitleInput.value =\n          currentActivity.content || "";',
+              'activityTitleInput.value =\n          currentActivity.title || "";'
+          )
+          s = s.replace(
+              'activityContentInput.value =\n          currentActivity.content_zh || "";',
+              'activityContentInput.value =\n          currentActivity.content || "";'
+          )
+
+          # Escape closes the new modal too.
+          s = s.replace(
+              '        closeAdminActivity();\n\n      }',
+              '        closeAdminActivity();\n\n        closeAllUpdatesModal();\n\n      }',
+              1
+          )
 
           p.write_text(s)
 
-          css=Path('style.css')
-          c=css.read_text()
-          addition='''\n\n/* =========================================\n   Recent Activity UI\n========================================= */\n\n.activity-card h3 {\n  color: #ffffff;\n}\n\n.activity-card p {\n  color: #aaa;\n}\n\n.activity-card small {\n  color: #666;\n}\n\n.activity-more-button {\n  margin-top: 22px;\n  padding: 11px 18px;\n  border: 1px solid rgba(255,255,255,0.14);\n  border-radius: 22px;\n  background: rgba(255,255,255,0.04);\n  color: #fff;\n  cursor: pointer;\n  font-size: 14px;\n  transition: 0.25s;\n  backdrop-filter: blur(10px);\n}\n\n.activity-more-button:hover {\n  background: rgba(255,255,255,0.1);\n  transform: translateY(-2px);\n}\n\n.all-updates-modal {\n  position: fixed;\n  inset: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  opacity: 0;\n  visibility: hidden;\n  transition: 0.25s;\n  z-index: 200;\n}\n\n.all-updates-modal.active {\n  opacity: 1;\n  visibility: visible;\n}\n\n.all-updates-overlay {\n  position: absolute;\n  inset: 0;\n  background: rgba(0,0,0,0.7);\n  backdrop-filter: blur(8px);\n}\n\n.all-updates-box {\n  position: relative;\n  z-index: 2;\n  width: min(720px, 90%);\n  max-height: 80vh;\n  overflow-y: auto;\n  padding: 32px;\n  border: 1px solid rgba(255,255,255,0.12);\n  border-radius: 24px;\n  background: rgba(18,16,30,0.94);\n  backdrop-filter: blur(25px);\n  box-shadow: 0 25px 70px rgba(0,0,0,0.5);\n}\n\n.all-updates-close {\n  position: absolute;\n  top: 16px;\n  right: 18px;\n  border: none;\n  background: transparent;\n  color: #888;\n  font-size: 28px;\n  cursor: pointer;\n}\n\n.all-updates-title {\n  color: #fff;\n  margin-bottom: 8px;\n}\n\n.all-updates-subtitle {\n  color: #888;\n  margin-bottom: 22px;\n}\n\n.all-update-card {\n  padding: 18px 0;\n  border-top: 1px solid rgba(255,255,255,0.08);\n}\n\n.all-update-card h3 {\n  color: #fff;\n  margin-bottom: 8px;\n}\n\n.all-update-card p {\n  color: #aaa;\n  line-height: 1.7;\n}\n\n.all-update-card small {\n  display: block;\n  margin-top: 10px;\n  color: #666;\n}\n'''
+          # -----------------------------
+          # index.html: add modal only
+          # -----------------------------
+          p = Path('index.html')
+          h = p.read_text()
+
+          if 'id="allUpdatesModal"' not in h:
+              modal = '''\n\n  <!-- =====================================================\n       ALL UPDATES MODAL\n  ====================================================== -->\n\n  <div class="all-updates-modal" id="allUpdatesModal">\n\n    <div class="all-updates-overlay" id="allUpdatesOverlay"></div>\n\n    <div class="all-updates-box">\n\n      <button class="all-updates-close" id="allUpdatesClose">×</button>\n\n      <h2 class="all-updates-title" data-en="All Updates" data-zh="全部动态">\n        全部动态\n      </h2>\n\n      <p class="all-updates-subtitle" data-en="Your previous JNX updates." data-zh="这里保存 JNX 之前发布的所有动态。">\n        这里保存 JNX 之前发布的所有动态。\n      </p>\n\n      <div id="allUpdatesList"></div>\n\n    </div>\n\n  </div>\n'''
+              h = h.replace('\n  <script src="script.js"></script>', modal + '\n\n  <script src="script.js"></script>', 1)
+              p.write_text(h)
+
+          # -----------------------------
+          # style.css: UI only
+          # -----------------------------
+          p = Path('style.css')
+          c = p.read_text()
+
           if '/* Recent Activity UI */' not in c:
-              css.write_text(c+addition)
+              c += r'''\n\n\n/* =========================================\n   Recent Activity UI\n========================================= */\n\n.activity-card h3 {\n  color: #ffffff;\n}\n\n.activity-card p {\n  color: #aaa;\n}\n\n.activity-card small {\n  display: block;\n  margin-top: 10px;\n  color: #666;\n}\n\n.activity-more-button {\n  margin-top: 22px;\n  padding: 11px 18px;\n  border: 1px solid rgba(255,255,255,0.14);\n  border-radius: 22px;\n  background: rgba(255,255,255,0.04);\n  color: #fff;\n  cursor: pointer;\n  font-size: 14px;\n  transition: 0.25s;\n  backdrop-filter: blur(10px);\n}\n\n.activity-more-button:hover {\n  background: rgba(255,255,255,0.1);\n  transform: translateY(-2px);\n}\n\n.all-updates-modal {\n  position: fixed;\n  inset: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  opacity: 0;\n  visibility: hidden;\n  transition: 0.25s;\n  z-index: 200;\n}\n\n.all-updates-modal.active {\n  opacity: 1;\n  visibility: visible;\n}\n\n.all-updates-overlay {\n  position: absolute;\n  inset: 0;\n  background: rgba(0,0,0,0.7);\n  backdrop-filter: blur(8px);\n}\n\n.all-updates-box {\n  position: relative;\n  z-index: 2;\n  width: min(720px, 90%);\n  max-height: 80vh;\n  overflow-y: auto;\n  padding: 32px;\n  border: 1px solid rgba(255,255,255,0.12);\n  border-radius: 24px;\n  background: rgba(18,16,30,0.94);\n  backdrop-filter: blur(25px);\n  box-shadow: 0 25px 70px rgba(0,0,0,0.5);\n}\n\n.all-updates-close {\n  position: absolute;\n  top: 16px;\n  right: 18px;\n  border: none;\n  background: transparent;\n  color: #888;\n  font-size: 28px;\n  cursor: pointer;\n}\n\n.all-updates-title {\n  color: #fff;\n  margin-bottom: 8px;\n}\n\n.all-updates-subtitle {\n  color: #888;\n  margin-bottom: 22px;\n}\n\n.all-update-card {\n  padding: 18px 0;\n  border-top: 1px solid rgba(255,255,255,0.08);\n}\n\n.all-update-card h3 {\n  color: #fff;\n  margin-bottom: 8px;\n}\n\n.all-update-card p {\n  color: #aaa;\n  line-height: 1.7;\n}\n\n.all-update-card small {\n  display: block;\n  margin-top: 10px;\n  color: #666;\n}\n\n@media (max-width: 700px) {\n  .all-updates-box {\n    width: calc(100% - 28px);\n    padding: 25px 20px;\n    max-height: 84vh;\n    border-radius: 20px;\n  }\n}\n'''
+              p.write_text(c)
           PY
+
+      - name: Validate files
+        run: |
+          grep -q 'function openAllUpdatesModal' script.js
+          grep -q 'id="allUpdatesModal"' index.html
+          grep -q 'activity-more-button' style.css
+
       - name: Commit and remove workflow
         run: |
           rm .github/workflows/patch-activity-ui.yml
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add script.js style.css .github/workflows/patch-activity-ui.yml
-          git diff --cached --quiet || git commit -m "Fix activity content and add view all UI"
+          git add index.html script.js style.css .github/workflows/patch-activity-ui.yml
+          git diff --cached --quiet || git commit -m "Add recent activity history UI"
           git push
