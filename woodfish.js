@@ -1,8 +1,11 @@
 (function(){
   const SUPABASE_URL='https://qdehfgjifhtczkrpuadl.supabase.co';
   const SUPABASE_KEY='sb_publishable_ChrvUYG2OES6q2kCpkBJcA_uaAmfOVp';
+  let started=false;
   function init(){
-    if(!window.supabase?.createClient)return;
+    if(started)return;
+    if(!window.supabase?.createClient){setTimeout(init,300);return;}
+    started=true;
     const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
     if(document.getElementById('jnxWoodfish'))return;
     const style=document.createElement('style');
