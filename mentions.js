@@ -335,3 +335,71 @@
     }
   });
 })();
+
+
+
+(function () {
+  const style = document.createElement("style");
+
+  style.textContent = `
+    @media (max-width: 600px) {
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+      }
+
+      #jnxPrivateModal {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        overflow: hidden !important;
+        touch-action: none !important;
+      }
+
+      .jnx-private-box {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        border-radius: 0 !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+      }
+
+      .jnx-private-header {
+        flex: 0 0 auto !important;
+      }
+
+      .jnx-private-messages {
+        flex: 1 1 auto !important;
+        height: 0 !important;
+        min-height: 0 !important;
+
+        overflow-y: scroll !important;
+        overflow-x: hidden !important;
+
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior: contain !important;
+        touch-action: pan-y !important;
+      }
+
+      .jnx-private-footer {
+        flex: 0 0 auto !important;
+        position: relative !important;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+})();
