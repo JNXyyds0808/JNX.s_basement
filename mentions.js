@@ -262,3 +262,76 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();
+
+
+
+/* JNX mobile chat scroll lock */
+(function () {
+  const style = document.createElement("style");
+
+  style.textContent = `
+    @media (max-width: 600px) {
+
+      body.jnx-chat-locked {
+        overflow: hidden !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        overscroll-behavior: none !important;
+        touch-action: none !important;
+      }
+
+      #jnxChatModal.active,
+      #jnxPrivateModal.active {
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+      }
+
+      .jnx-chat-messages,
+      .jnx-private-messages {
+        overflow-y: auto !important;
+        overscroll-behavior: contain !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+      }
+
+      .jnx-chat-box,
+      .jnx-private-box {
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        overflow: hidden !important;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+
+  function lockPage() {
+    if (window.innerWidth <= 600) {
+      document.body.classList.add("jnx-chat-locked");
+    }
+  }
+
+  function unlockPage() {
+    document.body.classList.remove("jnx-chat-locked");
+  }
+
+  document.addEventListener("click", function (event) {
+    if (
+      event.target.closest("#jnxChatButton") ||
+      event.target.closest(".jnx-chat-user")
+    ) {
+      setTimeout(lockPage, 50);
+    }
+
+    if (
+      event.target.closest("#jnxChatClose") ||
+      event.target.closest("#jnxChatOverlay") ||
+      event.target.closest("#jnxPrivateClose") ||
+      event.target.closest("#jnxPrivateOverlay")
+    ) {
+      setTimeout(unlockPage, 50);
+    }
+  });
+})();
