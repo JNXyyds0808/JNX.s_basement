@@ -1,0 +1,57 @@
+name: Patch activity UI
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch files
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('script.js')
+          s=p.read_text()
+
+          # Make the activity query use the actual title/content columns.
+          s=s.replace('''        .select(\n          "id, content, content_zh, content_en, updated_at"\n        )''','''        .select(\n          "id, title, content, updated_at"\n        )''')
+          s=s.replace('''        .select(\n          "id, content, content_zh, updated_at"\n        )''','''        .select(\n          "id, title, content, updated_at"\n        )''')
+
+          # Replace the activity rendering block while preserving the rest of the app.
+          marker='''    activityList.innerHTML = "";\n\n\n    if (\n      !result.data ||\n      result.data.length === 0\n    ) {'''
+          if marker not in s:
+              raise SystemExit('activity render marker not found')
+
+          start=s.index(marker)
+          end=s.index('''\n\n\n  /* =====================================================\n     ALL UPDATES MODAL''', start) if '/* =====================================================\n     ALL UPDATES MODAL' in s[start:] else -1
+          if end == -1:
+              # Find the next ADMIN EDIT BUTTON section as a fallback.
+              end=s.index('''\n\n\n  /* =====================================================\n     ADMIN EDIT BUTTON''', start)
+
+          new_block='''    activityList.innerHTML = "";\n\n\n    if (!result.data || result.data.length === 0) {\n\n      const empty = document.createElement("p");\n      empty.textContent = language === "zh"\n        ? "暂时还没有动态。"\n        : "No updates yet.";\n      activityList.appendChild(empty);\n      return;\n    }\n\n\n    currentActivity = result.data[0];\n\n    const updates = result.data;\n\n    updates.slice(0, 3).forEach(function (item) {\n\n      const card = document.createElement("article");\n      card.className = "activity-card";\n\n      const title = document.createElement("h3");\n      title.textContent = item.title || "";\n\n      const content = document.createElement("p");\n      content.textContent = item.content || "";\n\n      const date = document.createElement("small");\n      if (item.updated_at) {\n        const dateObject = new Date(item.updated_at);\n        date.textContent = language === "zh"\n          ? "更新于 " + dateObject.toLocaleString("zh-CN")\n          : "Updated " + dateObject.toLocaleString("en-US");\n      }\n\n      card.appendChild(title);\n      card.appendChild(content);\n      card.appendChild(date);\n      activityList.appendChild(card);\n    });\n\n    if (updates.length > 3) {\n      const moreButton = document.createElement("button");\n      moreButton.className = "activity-more-button";\n      moreButton.textContent = language === "zh"\n        ? "查看更多  →"\n        : "View all updates  →";\n      moreButton.addEventListener("click", function () {\n        openAllUpdatesModal(updates);\n      });\n      activityList.appendChild(moreButton);\n    }'''
+          s=s[:start]+new_block+s[end:]
+
+          # Ensure the admin editor uses title/content.
+          s=s.replace('''activityTitleInput.value =\n            currentActivity.content || "";''','''activityTitleInput.value =\n            currentActivity.title || "";''')
+          s=s.replace('''activityContentInput.value =\n            currentActivity.content_zh || "";''','''activityContentInput.value =\n            currentActivity.content || "";''')
+
+          p.write_text(s)
+
+          css=Path('style.css')
+          c=css.read_text()
+          addition='''\n\n/* =========================================\n   Recent Activity UI\n========================================= */\n\n.activity-card h3 {\n  color: #ffffff;\n}\n\n.activity-card p {\n  color: #aaa;\n}\n\n.activity-card small {\n  color: #666;\n}\n\n.activity-more-button {\n  margin-top: 22px;\n  padding: 11px 18px;\n  border: 1px solid rgba(255,255,255,0.14);\n  border-radius: 22px;\n  background: rgba(255,255,255,0.04);\n  color: #fff;\n  cursor: pointer;\n  font-size: 14px;\n  transition: 0.25s;\n  backdrop-filter: blur(10px);\n}\n\n.activity-more-button:hover {\n  background: rgba(255,255,255,0.1);\n  transform: translateY(-2px);\n}\n\n.all-updates-modal {\n  position: fixed;\n  inset: 0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  opacity: 0;\n  visibility: hidden;\n  transition: 0.25s;\n  z-index: 200;\n}\n\n.all-updates-modal.active {\n  opacity: 1;\n  visibility: visible;\n}\n\n.all-updates-overlay {\n  position: absolute;\n  inset: 0;\n  background: rgba(0,0,0,0.7);\n  backdrop-filter: blur(8px);\n}\n\n.all-updates-box {\n  position: relative;\n  z-index: 2;\n  width: min(720px, 90%);\n  max-height: 80vh;\n  overflow-y: auto;\n  padding: 32px;\n  border: 1px solid rgba(255,255,255,0.12);\n  border-radius: 24px;\n  background: rgba(18,16,30,0.94);\n  backdrop-filter: blur(25px);\n  box-shadow: 0 25px 70px rgba(0,0,0,0.5);\n}\n\n.all-updates-close {\n  position: absolute;\n  top: 16px;\n  right: 18px;\n  border: none;\n  background: transparent;\n  color: #888;\n  font-size: 28px;\n  cursor: pointer;\n}\n\n.all-updates-title {\n  color: #fff;\n  margin-bottom: 8px;\n}\n\n.all-updates-subtitle {\n  color: #888;\n  margin-bottom: 22px;\n}\n\n.all-update-card {\n  padding: 18px 0;\n  border-top: 1px solid rgba(255,255,255,0.08);\n}\n\n.all-update-card h3 {\n  color: #fff;\n  margin-bottom: 8px;\n}\n\n.all-update-card p {\n  color: #aaa;\n  line-height: 1.7;\n}\n\n.all-update-card small {\n  display: block;\n  margin-top: 10px;\n  color: #666;\n}\n'''
+          if '/* Recent Activity UI */' not in c:
+              css.write_text(c+addition)
+          PY
+      - name: Commit and remove workflow
+        run: |
+          rm .github/workflows/patch-activity-ui.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add script.js style.css .github/workflows/patch-activity-ui.yml
+          git diff --cached --quiet || git commit -m "Fix activity content and add view all UI"
+          git push
