@@ -48,30 +48,15 @@
       return;
     }
 
-    const db = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
-
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let currentUser = null;
 
     async function refreshBadge() {
       if (!currentUser) return;
-
-      const result = await db
-        .from("chat_mentions")
-        .select("id", { count: "exact", head: true })
-        .eq("mentioned_user_id", currentUser.id)
-        .eq("is_read", false);
-
-      if (result.error) {
-        console.error("Mention badge error:", result.error);
-        return;
-      }
-
+      const result = await db.from("chat_mentions").select("id", { count: "exact", head: true }).eq("mentioned_user_id", currentUser.id).eq("is_read", false);
+      if (result.error) { console.error("Mention badge error:", result.error); return; }
       const badge = ensureBadge();
       if (!badge) return;
-
       const count = result.count || 0;
       badge.textContent = count > 99 ? "99+" : String(count);
       badge.style.display = count > 0 ? "block" : "none";
@@ -79,17 +64,8 @@
 
     async function markMentionsRead() {
       if (!currentUser) return;
-
-      const result = await db
-        .from("chat_mentions")
-        .update({ is_read: true })
-        .eq("mentioned_user_id", currentUser.id)
-        .eq("is_read", false);
-
-      if (result.error) {
-        console.error("Mention read error:", result.error);
-      }
-
+      const result = await db.from("chat_mentions").update({ is_read: true }).eq("mentioned_user_id", currentUser.id).eq("is_read", false);
+      if (result.error) console.error("Mention read error:", result.error);
       await refreshBadge();
     }
 
@@ -103,9 +79,7 @@
 
     document.addEventListener("click", event => {
       const button = event.target.closest?.("#jnxChatButton");
-      if (button && currentUser) {
-        setTimeout(markMentionsRead, 400);
-      }
+      if (button && currentUser) setTimeout(markMentionsRead, 400);
     });
 
     db.auth.onAuthStateChange(async (_event, session) => {
@@ -114,44 +88,169 @@
     });
 
     db.channel("jnx-mentions")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "chat_mentions"
-        },
-        async payload => {
-          if (
-            currentUser &&
-            payload.new?.mentioned_user_id === currentUser.id
-          ) {
-            await refreshBadge();
-          }
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "chat_mentions"
-        },
-        async payload => {
-          if (
-            currentUser &&
-            payload.new?.mentioned_user_id === currentUser.id
-          ) {
-            await refreshBadge();
-          }
-        }
-      )
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_mentions" }, async payload => {
+        if (currentUser && payload.new?.mentioned_user_id === currentUser.id) await refreshBadge();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_mentions" }, async payload => {
+        if (currentUser && payload.new?.mentioned_user_id === currentUser.id) await refreshBadge();
+      })
       .subscribe();
+
+    initPrivateChat(db);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
+  function initPrivateChat(db) {
+    const css = document.createElement("style");
+    css.textContent = `
+      #jnxPrivateModal { position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center; opacity:0; visibility:hidden; pointer-events:none; transition:.2s; }
+      #jnxPrivateModal.active { opacity:1; visibility:visible; pointer-events:auto; }
+      .jnx-private-overlay { position:absolute; inset:0; background:rgba(0,0,0,.74); backdrop-filter:blur(8px); }
+      .jnx-private-box { position:relative; z-index:2; width:min(620px,94vw); height:min(680px,88vh); display:flex; flex-direction:column; background:rgba(18,16,30,.98); border:1px solid rgba(255,255,255,.12); border-radius:24px; overflow:hidden; box-shadow:0 25px 80px rgba(0,0,0,.55); }
+      .jnx-private-header { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08); }
+      .jnx-private-header h2 { color:#fff; margin:0; font-size:20px; }
+      .jnx-private-header p { color:#777; margin:4px 0 0; font-size:12px; }
+      .jnx-private-close { border:0; background:transparent; color:#888; font-size:28px; cursor:pointer; }
+      .jnx-private-messages { flex:1; min-height:0; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:10px; }
+      .jnx-private-message { max-width:78%; padding:10px 13px; border-radius:16px; background:rgba(255,255,255,.07); align-self:flex-start; }
+      .jnx-private-message.mine { align-self:flex-end; background:rgba(255,255,255,.13); }
+      .jnx-private-content { color:#fff; white-space:pre-wrap; word-break:break-word; line-height:1.55; font-size:15px; }
+      .jnx-private-time { color:#666; font-size:10px; margin-top:5px; }
+      .jnx-private-empty { color:#777; margin:auto; text-align:center; }
+      .jnx-private-footer { display:flex; gap:10px; padding:12px; border-top:1px solid rgba(255,255,255,.08); }
+      .jnx-private-input { flex:1; min-width:0; resize:none; height:46px; max-height:120px; padding:12px 14px; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.05); color:#fff; outline:none; font:inherit; }
+      .jnx-private-send { border:0; border-radius:14px; padding:0 18px; background:#fff; color:#111; font-weight:600; cursor:pointer; }
+      .jnx-private-send:disabled { opacity:.5; }
+      @media(max-width:600px){ #jnxPrivateModal{align-items:flex-end;} .jnx-private-box{width:100vw;height:88dvh;height:88vh;border-radius:20px 20px 0 0;} .jnx-private-message{max-width:88%;} }
+    `;
+    document.head.appendChild(css);
+
+    if (!document.getElementById("jnxPrivateModal")) {
+      const modal = document.createElement("div");
+      modal.id = "jnxPrivateModal";
+      modal.innerHTML = `
+        <div class="jnx-private-overlay" id="jnxPrivateOverlay"></div>
+        <div class="jnx-private-box">
+          <div class="jnx-private-header"><div><h2 id="jnxPrivateTitle">私人聊天</h2><p>只有你和对方可以看到</p></div><button class="jnx-private-close" id="jnxPrivateClose">×</button></div>
+          <div class="jnx-private-messages" id="jnxPrivateMessages"><div class="jnx-private-empty">选择用户开始聊天。</div></div>
+          <div class="jnx-private-footer"><textarea class="jnx-private-input" id="jnxPrivateInput" maxlength="2000" placeholder="输入消息..." rows="1"></textarea><button class="jnx-private-send" id="jnxPrivateSend">发送</button></div>
+        </div>`;
+      document.body.appendChild(modal);
+    }
+
+    let selectedUser = null;
+    let conversationId = null;
+    let privateChannel = null;
+    const modal = document.getElementById("jnxPrivateModal");
+    const messages = document.getElementById("jnxPrivateMessages");
+    const input = document.getElementById("jnxPrivateInput");
+    const send = document.getElementById("jnxPrivateSend");
+
+    function closePrivate() {
+      modal.classList.remove("active");
+      if (privateChannel) { db.removeChannel(privateChannel); privateChannel = null; }
+      conversationId = null;
+      selectedUser = null;
+    }
+
+    function render(rows) {
+      messages.innerHTML = "";
+      if (!rows.length) { messages.innerHTML = '<div class="jnx-private-empty">还没有消息，发送第一条吧。</div>'; return; }
+      rows.forEach(row => {
+        const item = document.createElement("div");
+        item.className = "jnx-private-message" + (row.sender_id === window.__jnxCurrentUserId ? " mine" : "");
+        const content = document.createElement("div"); content.className = "jnx-private-content"; content.textContent = row.content;
+        const time = document.createElement("div"); time.className = "jnx-private-time"; time.textContent = new Date(row.created_at).toLocaleString("zh-CN");
+        item.append(content, time); messages.appendChild(item);
+      });
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    async function findOrCreateConversation(otherId) {
+      const me = window.__jnxCurrentUserId;
+      const mine = await db.from("private_conversation_members").select("conversation_id").eq("user_id", me);
+      if (mine.error) throw mine.error;
+      for (const row of mine.data || []) {
+        const other = await db.from("private_conversation_members").select("conversation_id").eq("conversation_id", row.conversation_id).eq("user_id", otherId).maybeSingle();
+        if (!other.error && other.data) return row.conversation_id;
+      }
+      const created = await db.from("private_conversations").insert({}).select("id").single();
+      if (created.error) throw created.error;
+      const members = await db.from("private_conversation_members").insert([{ conversation_id:created.data.id, user_id:me }, { conversation_id:created.data.id, user_id:otherId }]);
+      if (members.error) throw members.error;
+      return created.data.id;
+    }
+
+    async function openPrivate(user) {
+      selectedUser = user;
+      document.getElementById("jnxPrivateTitle").textContent = user.display_name || user.username || "私人聊天";
+      modal.classList.add("active");
+      messages.innerHTML = '<div class="jnx-private-empty">加载中...</div>';
+      try {
+        conversationId = await findOrCreateConversation(user.id);
+        const result = await db.from("private_messages").select("id,conversation_id,sender_id,content,created_at").eq("conversation_id", conversationId).order("created_at", { ascending:true }).limit(300);
+        if (result.error) throw result.error;
+        render(result.data || []);
+        if (privateChannel) db.removeChannel(privateChannel);
+        privateChannel = db.channel("jnx-private-" + conversationId).on("postgres_changes", { event:"INSERT", schema:"public", table:"private_messages", filter:"conversation_id=eq." + conversationId }, payload => {
+          if (!payload.new || payload.new.id == null) return;
+          const exists = messages.querySelector('[data-private-id="' + payload.new.id + '"]');
+          if (!exists) {
+            const row = payload.new;
+            const item = document.createElement("div"); item.dataset.privateId = row.id; item.className = "jnx-private-message" + (row.sender_id === window.__jnxCurrentUserId ? " mine" : "");
+            const content = document.createElement("div"); content.className = "jnx-private-content"; content.textContent = row.content;
+            const time = document.createElement("div"); time.className = "jnx-private-time"; time.textContent = new Date(row.created_at).toLocaleString("zh-CN");
+            item.append(content,time); messages.appendChild(item); messages.scrollTop = messages.scrollHeight;
+          }
+        }).subscribe((status, error) => { if (error) console.error("Private chat realtime error:", status, error); });
+        setTimeout(() => input.focus(), 100);
+      } catch (error) {
+        console.error("Private chat open error:", error);
+        messages.innerHTML = '<div class="jnx-private-empty">私人聊天暂时无法打开。</div>';
+      }
+    }
+
+    async function sendPrivate() {
+      const content = input.value.trim();
+      if (!conversationId || !content || send.disabled) return;
+      send.disabled = true;
+      const result = await db.from("private_messages").insert({ conversation_id:conversationId, sender_id:window.__jnxCurrentUserId, content }).select("id,conversation_id,sender_id,content,created_at").single();
+      send.disabled = false;
+      if (result.error) { console.error("Private send error:", result.error); alert("消息发送失败：" + result.error.message); return; }
+      input.value = ""; input.style.height = "46px";
+    }
+
+    document.addEventListener("click", event => {
+      const userButton = event.target.closest?.(".jnx-chat-user");
+      if (userButton) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const buttons = Array.from(document.querySelectorAll(".jnx-chat-user"));
+        const index = buttons.indexOf(userButton);
+        if (index >= 0) {
+          const display = userButton.querySelector(".jnx-chat-user-display")?.textContent || "JNX User";
+          const usernameText = userButton.querySelector(".jnx-chat-user-username")?.textContent || "";
+          const username = usernameText.replace(/^@/, "");
+          loadUserByUsername(username, display);
+        }
+      }
+    }, true);
+
+    async function loadUserByUsername(username, displayName) {
+      const result = await db.from("profiles").select("id,username,display_name").eq("username", username).maybeSingle();
+      if (result.error || !result.data) return;
+      openPrivate(result.data);
+    }
+
+    document.getElementById("jnxPrivateClose")?.addEventListener("click", closePrivate);
+    document.getElementById("jnxPrivateOverlay")?.addEventListener("click", closePrivate);
+    send?.addEventListener("click", sendPrivate);
+    input?.addEventListener("keydown", event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); sendPrivate(); } });
+    input?.addEventListener("input", () => { input.style.height="46px"; input.style.height=Math.min(input.scrollHeight,120)+"px"; });
+
+    db.auth.getUser().then(result => { window.__jnxCurrentUserId = result.data?.user?.id || null; });
+    db.auth.onAuthStateChange((_event, session) => { window.__jnxCurrentUserId = session?.user?.id || null; });
   }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
 })();
