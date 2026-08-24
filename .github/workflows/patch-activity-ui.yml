@@ -365,3 +365,5 @@ jobs:
           git add index.html script.js style.css .github/workflows/patch-activity-ui.yml
           git commit -m "Fix recent activity history UI"
           git push
+
+# trigger: recent-activity-ui-2026-08-24
