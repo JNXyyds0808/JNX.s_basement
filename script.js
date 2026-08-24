@@ -26,7 +26,7 @@
     .jnx-chat-modal.active { opacity:1; visibility:visible; }
     .jnx-chat-overlay { position:absolute; inset:0; background:rgba(0,0,0,.72); backdrop-filter:blur(8px); }
     .jnx-chat-box { position:relative; z-index:2; width:min(820px,94vw); height:min(720px,88vh); display:flex; flex-direction:column; background:rgba(18,16,30,.97); border:1px solid rgba(255,255,255,.12); border-radius:24px; overflow:hidden; box-shadow:0 25px 80px rgba(0,0,0,.55); }
-    .jnx-chat-header { display:flex; align-items:center; justify-content:space-between; padding:20px 22px; border-bottom:1px solid rgba(255,255,255,.08); }
+    .jnx-chat-header { display:flex; align-items:center; justify-content:space-between; padding:20px 22px; border-bottom:1px solid rgba(255,255,255,.08); flex-shrink:0; }
     .jnx-chat-header h2 { color:#fff; margin:0; font-size:22px; }
     .jnx-chat-header p { color:#888; margin:5px 0 0; font-size:13px; }
     .jnx-chat-close { border:0; background:transparent; color:#888; font-size:28px; cursor:pointer; }
@@ -40,8 +40,8 @@
     .jnx-chat-user-display { color:#fff; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .jnx-chat-user-username { color:#666; font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .jnx-chat-users-empty { color:#666; font-size:13px; padding:10px; line-height:1.6; }
-    .jnx-chat-main { flex:1; min-width:0; display:flex; flex-direction:column; }
-    .jnx-chat-messages { flex:1; min-height:0; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:12px; }
+    .jnx-chat-main { flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; }
+    .jnx-chat-messages { flex:1; min-height:0; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:12px; -webkit-overflow-scrolling:touch; }
     .jnx-chat-message { max-width:78%; padding:11px 14px; border-radius:16px; background:rgba(255,255,255,.07); align-self:flex-start; }
     .jnx-chat-message.mine { align-self:flex-end; background:rgba(255,255,255,.13); }
     .jnx-chat-name { color:#aaa; font-size:12px; margin-bottom:4px; }
@@ -49,11 +49,24 @@
     .jnx-chat-content { color:#fff; font-size:15px; line-height:1.55; white-space:pre-wrap; word-break:break-word; }
     .jnx-chat-time { color:#666; font-size:10px; margin-top:5px; }
     .jnx-chat-empty { color:#777; text-align:center; margin:auto; }
-    .jnx-chat-footer { display:flex; gap:10px; padding:15px; border-top:1px solid rgba(255,255,255,.08); }
-    .jnx-chat-input { flex:1; min-width:0; resize:none; height:46px; max-height:120px; padding:12px 14px; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.05); color:#fff; outline:none; font:inherit; }
-    .jnx-chat-send { border:0; border-radius:14px; padding:0 18px; background:#fff; color:#111; font-weight:600; cursor:pointer; }
+    .jnx-chat-footer { display:flex; gap:10px; padding:15px; padding-bottom:max(15px, env(safe-area-inset-bottom)); border-top:1px solid rgba(255,255,255,.08); flex-shrink:0; background:rgba(18,16,30,.98); position:relative; z-index:3; }
+    .jnx-chat-input { flex:1; min-width:0; resize:none; height:46px; max-height:120px; padding:12px 14px; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.05); color:#fff; outline:none; font:inherit; font-size:16px; -webkit-appearance:none; appearance:none; }
+    .jnx-chat-send { border:0; border-radius:14px; padding:0 18px; min-height:46px; background:#fff; color:#111; font-weight:600; cursor:pointer; flex-shrink:0; }
     .jnx-chat-send:disabled { opacity:.5; cursor:default; }
-    @media (max-width:600px) { .jnx-chat-box { width:96vw; height:90vh; border-radius:18px; } .jnx-chat-layout { flex-direction:column; } .jnx-chat-users { width:100%; max-height:190px; border-right:0; border-bottom:1px solid rgba(255,255,255,.08); display:flex; flex-wrap:wrap; gap:4px; } .jnx-chat-users-title { width:100%; } .jnx-chat-user { width:calc(50% - 2px); } .jnx-chat-message { max-width:88%; } .jnx-chat-footer { padding:10px; } }
+    @media (max-width:600px) {
+      .jnx-chat-modal { align-items:flex-end; }
+      .jnx-chat-box { width:100vw; max-width:100vw; height:100dvh; max-height:100dvh; height:-webkit-fill-available; min-height:0; border-radius:18px 18px 0 0; }
+      .jnx-chat-layout { flex-direction:column; min-height:0; }
+      .jnx-chat-users { width:100%; max-height:150px; min-height:0; border-right:0; border-bottom:1px solid rgba(255,255,255,.08); display:flex; flex-wrap:wrap; gap:4px; overflow-y:auto; flex-shrink:0; }
+      .jnx-chat-users-title { width:100%; flex-shrink:0; }
+      .jnx-chat-user { width:calc(50% - 2px); }
+      .jnx-chat-main { min-height:0; flex:1; }
+      .jnx-chat-messages { padding:14px; }
+      .jnx-chat-message { max-width:88%; }
+      .jnx-chat-footer { padding:8px 10px; padding-bottom:max(8px, env(safe-area-inset-bottom)); gap:8px; }
+      .jnx-chat-input { height:44px; min-height:44px; }
+      .jnx-chat-send { min-height:44px; padding:0 15px; }
+    }
   `;
   document.head.appendChild(style);
 
