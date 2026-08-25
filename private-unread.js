@@ -140,7 +140,7 @@
       .on("postgres_changes",{event:"UPDATE",schema:"public",table:"private_message_reads"},payload=>{ if(user&&payload.new?.user_id===user.id) refresh(); })
       .subscribe();
 
-    setInterval(refresh,15000);
+    setInterval(refresh,3000);
   }
   if (window.supabase?.createClient) init(); else window.addEventListener("load",init,{once:true});
 })();
