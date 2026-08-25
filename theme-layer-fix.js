@@ -26,6 +26,7 @@
     html.jnxLight #allUpdatesModal .all-update-card{background:#f8f6ff!important;border-color:rgba(100,75,180,.18)!important}
     html.jnxLight #allUpdatesModal .all-updates-close{background:#eee9fa!important;color:#31274f!important;border-color:rgba(100,75,180,.28)!important}
     .jnxModalPromoted{z-index:40000!important}
+    @media(min-width:601px) and (max-width:1100px){.jnxGrid{margin-top:34px!important;gap:12px!important}.jnxCard{min-height:82px!important;padding:14px!important}.jnxIcon{font-size:22px!important;margin-bottom:6px!important}.jnxTitle{font-size:14px!important}.jnxDesc{font-size:11px!important}}
   `;
   document.head.appendChild(css);
   function promote(){
@@ -36,6 +37,9 @@
     const all=document.getElementById('allUpdatesModal');
     if(all&&all.parentElement!==document.body)document.body.appendChild(all);
   }
-  function init(){promote()}
+  function init(){
+    promote();
+    if(!document.querySelector('script[data-jnx-changelog-loader]')){const s=document.createElement('script');s.src='site-changelog.js?v=1';s.dataset.jnxChangelogLoader='1';document.body.appendChild(s)}
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
