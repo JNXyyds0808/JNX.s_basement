@@ -1,0 +1,41 @@
+/* JNX light-mode card window fix */
+html.light-mode .jnxWindow,
+body.light-mode .jnxWindow,
+html.light .jnxWindow,
+body.light .jnxWindow {
+  background:#ffffff!important;
+  color:#241b3d!important;
+  border-color:rgba(120,80,190,.22)!important;
+}
+html.light-mode .jnxWindow h1,
+html.light-mode .jnxWindow h2,
+html.light-mode .jnxWindow h3,
+body.light-mode .jnxWindow h1,
+body.light-mode .jnxWindow h2,
+body.light-mode .jnxWindow h3,
+html.light .jnxWindow h1,
+html.light .jnxWindow h2,
+html.light .jnxWindow h3,
+body.light .jnxWindow h1,
+body.light .jnxWindow h2,
+body.light .jnxWindow h3{color:#241b3d!important}
+html.light-mode .jnxWindow p,
+body.light-mode .jnxWindow p,
+html.light .jnxWindow p,
+body.light .jnxWindow p{color:#5f5670!important}
+html.light-mode .jnxWindow button,
+body.light-mode .jnxWindow button,
+html.light .jnxWindow button,
+body.light .jnxWindow button{color:#241b3d}
+html.light-mode .jnxClose,
+body.light-mode .jnxClose,
+html.light .jnxClose,
+body.light .jnxClose{background:#f1ebff!important;color:#4c2b73!important;border-color:rgba(120,80,190,.25)!important}
+html.light-mode .jnxCard,
+body.light-mode .jnxCard,
+html.light .jnxCard,
+body.light .jnxCard{background:#fff!important;color:#241b3d!important;box-shadow:0 4px 18px rgba(70,45,100,.07)}
+html.light-mode .jnxDesc,
+body.light-mode .jnxDesc,
+html.light .jnxDesc,
+body.light .jnxDesc{color:#6d647b!important}
