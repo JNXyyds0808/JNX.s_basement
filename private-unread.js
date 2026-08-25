@@ -133,14 +133,6 @@
       if (button && user) setTimeout(() => markUserReadByButton(button), 500);
     }, true);
 
-    const observer = new MutationObserver(() => {
-      const modal = document.getElementById("jnxPrivateModal");
-      if (modal?.classList.contains("active")) setTimeout(refresh,300);
-      const chatModal = document.getElementById("jnxChatModal");
-      if (chatModal?.classList.contains("active")) setTimeout(refreshUserBadges,500);
-    });
-    observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});
-
     db.channel("jnx-private-unread")
       .on("postgres_changes",{event:"INSERT",schema:"public",table:"private_messages"},async payload=>{
         if (user && payload.new?.sender_id !== user.id) await refresh();
