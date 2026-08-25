@@ -17,12 +17,16 @@
     const main=document.querySelector('#home main');
     if(main) main.appendChild(launcher); else document.body.appendChild(launcher);
     document.body.appendChild(overlay);
-    const today=()=>new Date().toISOString().slice(0,10);
+    function newYorkDate(){
+      const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+      const get=t=>parts.find(p=>p.type===t)?.value;
+      return `${get('year')}-${get('month')}-${get('day')}`;
+    }
     async function load(){
       const {data:{user}}=await db.auth.getUser();
       if(!user){launcher.style.display='none';overlay.classList.remove('active');return}
       launcher.style.display='block';
-      const d=today();
+      const d=newYorkDate();
       const mine=await db.from('woodfish_daily').select('count').eq('user_id',user.id).eq('day',d).maybeSingle();
       const total=await db.from('woodfish_totals').select('count').eq('user_id',user.id).maybeSingle();
       const sum=await db.from('woodfish_daily').select('count').eq('day',d);
