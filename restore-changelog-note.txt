@@ -1,0 +1,1 @@
+Restored site changelog UI and refined iPad dashboard spacing.
