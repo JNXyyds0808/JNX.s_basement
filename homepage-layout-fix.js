@@ -1,0 +1,1 @@
+document.addEventListener('DOMContentLoaded',()=>{const hide=()=>{const x=document.getElementById('jnxGameLauncher');if(x)x.style.display='none';const s=document.querySelector('.jnx-dashboard-subtitle');if(s)s.remove()};hide();setTimeout(hide,500);setTimeout(hide,1500);});
