@@ -21,7 +21,6 @@
     };
     window.__jnxUpdateHomeChatUnread=update;
     update();
-    new MutationObserver(update).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['style']});
     setInterval(update,1000);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
