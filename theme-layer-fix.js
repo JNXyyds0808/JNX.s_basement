@@ -37,9 +37,17 @@
     const all=document.getElementById('allUpdatesModal');
     if(all&&all.parentElement!==document.body)document.body.appendChild(all);
   }
+  function loadScriptOnce(src,attr){
+    if(document.querySelector(`script[${attr}]`))return;
+    const s=document.createElement('script');
+    s.src=src;
+    s.setAttribute(attr,'1');
+    document.body.appendChild(s);
+  }
   function init(){
     promote();
-    if(!document.querySelector('script[data-jnx-changelog-loader]')){const s=document.createElement('script');s.src='site-changelog.js?v=1';s.dataset.jnxChangelogLoader='1';document.body.appendChild(s)}
+    loadScriptOnce('site-changelog.js?v=1','data-jnx-changelog-loader');
+    loadScriptOnce('profile-enhancement.js?v=1','data-jnx-profile-enhancement-loader');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
