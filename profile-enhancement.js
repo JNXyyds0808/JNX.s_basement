@@ -41,23 +41,12 @@
         html.jnxLight #jnxSettingsProfile{border-color:rgba(100,75,180,.18)}
         html.jnxLight #jnxSettingsBio{background:#fff;color:#242130;border-color:rgba(100,75,180,.22)}
         html.jnxLight .jnx-settings-avatar-button{background:#f4efff;color:#31274f;border-color:rgba(100,75,180,.22)}
-
-        @media(min-width:601px) and (max-width:1100px){
-          #home main{padding-top:18px!important;padding-bottom:12px!important;transform:none!important}
-          #home main h1{font-size:clamp(38px,6vw,54px)!important;line-height:.92!important;margin:0 0 6px!important;transform:translateY(-6px)!important}
-          .jnxGrid{margin-top:8px!important;gap:8px!important;width:min(720px,96%)!important}
-          .jnxCard{min-height:62px!important;padding:8px 11px!important;border-radius:13px!important}
-          .jnxIcon{font-size:17px!important;margin-bottom:2px!important}
-          .jnxTitle{font-size:12px!important;line-height:1.1!important}
-          .jnxDesc{font-size:9px!important;line-height:1.15!important;margin-top:2px!important}
+        @media(max-width:600px){
+          #profileModal .profile-box{max-height:82vh!important}
+          #profileModal #profileAvatar{width:78px!important;height:78px!important}
+          #jnxProfilePublicName{font-size:21px}
+          #jnxProfileBioDisplay{font-size:12px}
         }
-        @media(min-width:900px) and (max-width:1100px) and (orientation:landscape){
-          #home main{padding-top:12px!important}
-          #home main h1{font-size:44px!important;transform:translateY(-8px)!important}
-          .jnxGrid{margin-top:4px!important;gap:7px!important}
-          .jnxCard{min-height:58px!important;padding:7px 10px!important}
-        }
-        @media(max-width:600px){#profileModal .profile-box{max-height:82vh!important}#profileModal #profileAvatar{width:78px!important;height:78px!important}#jnxProfilePublicName{font-size:21px}#jnxProfileBioDisplay{font-size:12px}}
       `;
       document.head.appendChild(style);
     }
@@ -92,25 +81,89 @@
 
     function render(){
       if(!profile)return;
-      injectProfileDisplay();injectSettingsEditor();
+      injectProfileDisplay();
+      injectSettingsEditor();
       const name=profile.display_name||profile.username||'JNX User';
       const username=profile.username||'';
       const avatar=document.getElementById('profileAvatar');
-      if(avatar){if(profile.avatar_url){avatar.style.backgroundImage=`url("${profile.avatar_url}")`;avatar.classList.add('jnx-has-avatar');avatar.textContent='';}else{avatar.style.backgroundImage='';avatar.classList.remove('jnx-has-avatar');avatar.textContent=fallback(name);}}
+      if(avatar){
+        if(profile.avatar_url){avatar.style.backgroundImage=`url("${profile.avatar_url}")`;avatar.classList.add('jnx-has-avatar');avatar.textContent='';}
+        else{avatar.style.backgroundImage='';avatar.classList.remove('jnx-has-avatar');avatar.textContent=fallback(name);}
+      }
       const n=document.getElementById('jnxProfilePublicName');if(n)n.textContent=name;
       const u=document.getElementById('jnxProfilePublicUsername');if(u)u.textContent=username?`@${username}`:'';
       const b=document.getElementById('jnxProfileBioDisplay');if(b){const text=(profile.bio||'').trim();b.textContent=text||'还没有个性签名';b.classList.toggle('jnx-empty',!text);}
-      const preview=document.getElementById('jnxSettingsAvatarPreview');if(preview){if(profile.avatar_url){preview.style.backgroundImage=`url("${profile.avatar_url}")`;preview.classList.add('jnx-has-avatar');preview.textContent='';}else{preview.style.backgroundImage='';preview.classList.remove('jnx-has-avatar');preview.textContent=fallback(name);}}
+      const preview=document.getElementById('jnxSettingsAvatarPreview');
+      if(preview){
+        if(profile.avatar_url){preview.style.backgroundImage=`url("${profile.avatar_url}")`;preview.classList.add('jnx-has-avatar');preview.textContent='';}
+        else{preview.style.backgroundImage='';preview.classList.remove('jnx-has-avatar');preview.textContent=fallback(name);}
+      }
       const bioInput=document.getElementById('jnxSettingsBio');if(bioInput)bioInput.value=profile.bio||'';
     }
 
-    async function loadProfile(){const auth=await db.auth.getUser();user=auth.data?.user||null;if(!user){profile=null;return;}const result=await db.from('profiles').select('id,username,display_name,bio,avatar_url,last_seen_at').eq('id',user.id).maybeSingle();if(result.error){console.error('Profile enhancement load error',result.error);return;}profile=result.data||null;render();}
-    async function heartbeat(){if(!user)return;const now=new Date().toISOString();const result=await db.from('profiles').update({last_seen_at:now}).eq('id',user.id);if(result.error)console.error('last_seen update error',result.error);else if(profile)profile.last_seen_at=now;}
-    async function saveBio(){if(!user)return;const input=document.getElementById('jnxSettingsBio');const hint=document.getElementById('jnxSettingsProfileHint');const bio=(input?.value||'').trim();const result=await db.from('profiles').update({bio}).eq('id',user.id);if(result.error){if(hint)hint.textContent='保存失败，请稍后再试';console.error(result.error);return;}if(profile)profile.bio=bio;render();if(hint){hint.textContent='已保存 ✓';setTimeout(()=>{if(hint)hint.textContent=''},1800);}}
-    async function uploadAvatar(event){if(!user)return;const file=event.target.files?.[0];if(!file)return;if(file.size>5*1024*1024){alert('头像不能超过 5 MB');return;}if(!/^image\/(png|jpeg|webp|gif)$/i.test(file.type)){alert('请选择 PNG、JPG、WebP 或 GIF 图片');return;}const ext=file.type==='image/jpeg'?'jpg':file.type.split('/')[1].toLowerCase();const path=`${user.id}/avatar.${ext}`;const upload=await db.storage.from('avatars').upload(path,file,{upsert:true,contentType:file.type,cacheControl:'60'});if(upload.error){console.error('Avatar upload error',upload.error);alert('头像上传失败');return;}const pub=db.storage.from('avatars').getPublicUrl(path);let url=pub.data?.publicUrl;if(!url)return;url+=`?v=${Date.now()}`;const save=await db.from('profiles').update({avatar_url:url}).eq('id',user.id);if(save.error){console.error('Avatar profile save error',save.error);return;}if(profile)profile.avatar_url=url;render();}
+    async function loadProfile(){
+      const auth=await db.auth.getUser();
+      user=auth.data?.user||null;
+      if(!user){profile=null;return;}
+      const result=await db.from('profiles').select('id,username,display_name,bio,avatar_url,last_seen_at').eq('id',user.id).maybeSingle();
+      if(result.error){console.error('Profile enhancement load error',result.error);return;}
+      profile=result.data||null;
+      render();
+    }
 
-    function start(){applyStyles();injectProfileDisplay();injectSettingsEditor();loadProfile().then(heartbeat);setInterval(heartbeat,60000);document.getElementById('profileButton')?.addEventListener('click',()=>setTimeout(render,30));document.getElementById('settingsButton')?.addEventListener('click',()=>setTimeout(()=>{injectSettingsEditor();render()},30));db.auth.onAuthStateChange(async()=>{await loadProfile();await heartbeat();});}
+    async function heartbeat(){
+      if(!user)return;
+      const now=new Date().toISOString();
+      const result=await db.from('profiles').update({last_seen_at:now}).eq('id',user.id);
+      if(result.error)console.error('last_seen update error',result.error);
+      else if(profile)profile.last_seen_at=now;
+    }
+
+    async function saveBio(){
+      if(!user)return;
+      const input=document.getElementById('jnxSettingsBio');
+      const hint=document.getElementById('jnxSettingsProfileHint');
+      const bio=(input?.value||'').trim();
+      const result=await db.from('profiles').update({bio}).eq('id',user.id);
+      if(result.error){if(hint)hint.textContent='保存失败，请稍后再试';console.error(result.error);return;}
+      if(profile)profile.bio=bio;
+      render();
+      if(hint){hint.textContent='已保存 ✓';setTimeout(()=>{if(hint)hint.textContent=''},1800);}
+    }
+
+    async function uploadAvatar(event){
+      if(!user)return;
+      const file=event.target.files?.[0];
+      if(!file)return;
+      if(file.size>5*1024*1024){alert('头像不能超过 5 MB');return;}
+      if(!/^image\/(png|jpeg|webp|gif)$/i.test(file.type)){alert('请选择 PNG、JPG、WebP 或 GIF 图片');return;}
+      const ext=file.type==='image/jpeg'?'jpg':file.type.split('/')[1].toLowerCase();
+      const path=`${user.id}/avatar.${ext}`;
+      const upload=await db.storage.from('avatars').upload(path,file,{upsert:true,contentType:file.type,cacheControl:'60'});
+      if(upload.error){console.error('Avatar upload error',upload.error);alert('头像上传失败');return;}
+      const pub=db.storage.from('avatars').getPublicUrl(path);
+      let url=pub.data?.publicUrl;
+      if(!url)return;
+      url+=`?v=${Date.now()}`;
+      const save=await db.from('profiles').update({avatar_url:url}).eq('id',user.id);
+      if(save.error){console.error('Avatar profile save error',save.error);return;}
+      if(profile)profile.avatar_url=url;
+      render();
+    }
+
+    function start(){
+      applyStyles();
+      injectProfileDisplay();
+      injectSettingsEditor();
+      loadProfile().then(heartbeat);
+      setInterval(heartbeat,60000);
+      document.getElementById('profileButton')?.addEventListener('click',()=>setTimeout(render,30));
+      document.getElementById('settingsButton')?.addEventListener('click',()=>setTimeout(()=>{injectSettingsEditor();render()},30));
+      db.auth.onAuthStateChange(async()=>{await loadProfile();await heartbeat();});
+    }
+
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   }
+
   if(window.supabase?.createClient)init();else window.addEventListener('load',init,{once:true});
 })();
