@@ -13,7 +13,7 @@
     if(document.getElementById('jnxChangelogButton'))return;
     const style=document.createElement('style');
     style.textContent=`
-      #jnxChangelogButton{position:fixed;right:18px;bottom:18px;z-index:6000;width:46px;height:46px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(20,18,32,.9);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+      #jnxChangelogButton{position:fixed;right:18px;bottom:18px;z-index:250;width:46px;height:46px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(20,18,32,.9);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.15)}
       #jnxChangelogButton:hover{transform:translateY(-1px)}
       #jnxChangelogModal{position:fixed;inset:0;z-index:32000;display:none;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;background:rgba(0,0,0,.62);backdrop-filter:blur(6px)}
       #jnxChangelogModal.open{display:flex}
