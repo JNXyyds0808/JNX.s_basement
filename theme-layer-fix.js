@@ -70,6 +70,7 @@
     loadScriptOnce('site-changelog.js?v=1','data-jnx-changelog-loader');
     loadScriptOnce('profile-enhancement.js?v=2','data-jnx-profile-enhancement-loader');
     loadScriptOnce('points-system.js?v=1','data-jnx-points-loader');
+    loadScriptOnce('points-shop.js?v=1','data-jnx-points-shop-loader');
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
