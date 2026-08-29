@@ -1,0 +1,135 @@
+(()=>{
+  const SUPABASE_URL='https://qdehfgjifhtczkrpuadl.supabase.co';
+  const SUPABASE_KEY='sb_publishable_ChrvUYG2OES6q2kCpkBJcA_uaAmfOVp';
+  let db=null,user=null,state=null,editingId=null;
+
+  function waitForSupabase(timeout=12000){
+    return new Promise((resolve,reject)=>{
+      if(window.supabase?.createClient)return resolve();
+      const start=Date.now();
+      const timer=setInterval(()=>{
+        if(window.supabase?.createClient){clearInterval(timer);resolve();}
+        else if(Date.now()-start>timeout){clearInterval(timer);reject(new Error('Supabase not ready'));}
+      },100);
+    });
+  }
+
+  function addStyles(){
+    if(document.getElementById('jnxPointsShopStyles'))return;
+    const s=document.createElement('style');s.id='jnxPointsShopStyles';s.textContent=`
+      #jnxPointsShopModal{position:fixed;inset:0;z-index:43000;display:none;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;background:rgba(0,0,0,.68);backdrop-filter:blur(7px)}
+      #jnxPointsShopModal.open{display:flex}
+      #jnxPointsShopBox{position:relative;width:min(820px,95vw);max-height:min(88dvh,820px);overflow-y:auto;padding:28px;border:1px solid rgba(255,255,255,.12);border-radius:24px;background:#171526;color:#fff;box-sizing:border-box}
+      #jnxPointsShopClose{position:absolute;right:14px;top:12px;width:36px;height:36px;border:1px solid rgba(255,255,255,.12);border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font-size:22px;cursor:pointer}
+      .jnxShopHead{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding-right:44px}.jnxShopHead h2{margin:0;font-size:26px}.jnxShopSub{margin-top:6px;color:#92909a;font-size:12px}.jnxShopBalance{flex:0 0 auto;padding:10px 13px;border:1px solid rgba(255,255,255,.1);border-radius:13px;background:rgba(255,255,255,.05);font-size:12px;color:#aaa}.jnxShopBalance b{display:block;margin-top:2px;color:#fff;font-size:22px}
+      .jnxShopGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:22px}.jnxShopItem{display:flex;flex-direction:column;min-width:0;padding:16px;border:1px solid rgba(255,255,255,.1);border-radius:17px;background:rgba(255,255,255,.045)}.jnxShopIcon{font-size:29px;line-height:1}.jnxShopTitle{margin-top:10px;font-weight:800;font-size:16px}.jnxShopDesc{margin-top:6px;min-height:38px;color:#aaa;font-size:12px;line-height:1.55;white-space:pre-wrap;word-break:break-word}.jnxShopMeta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px}.jnxShopPrice{font-weight:800;color:#d8caff}.jnxShopRedeem,.jnxShopEdit,.jnxShopAdminSave,.jnxShopAdminNew{border:0;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}.jnxShopRedeem{background:#fff;color:#171526}.jnxShopRedeem:disabled{opacity:.45;cursor:default}.jnxShopEdit{background:rgba(255,255,255,.09);color:#fff}.jnxShopInactive{margin-left:6px;padding:2px 6px;border-radius:999px;background:rgba(255,180,80,.14);color:#ffc98d;font-size:10px}
+      .jnxShopEmpty{grid-column:1/-1;padding:30px 12px;text-align:center;color:#777}
+      #jnxShopAdmin{display:none;margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1)}#jnxShopAdmin.show{display:block}.jnxShopAdminTop{display:flex;justify-content:space-between;align-items:center;gap:12px}.jnxShopAdminTop h3{margin:0;font-size:16px}.jnxShopAdminNew{background:rgba(255,255,255,.09);color:#fff}.jnxShopForm{display:grid;grid-template-columns:90px 1fr 120px;gap:10px;margin-top:12px}.jnxShopForm textarea,.jnxShopForm input{width:100%;box-sizing:border-box;padding:10px 11px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.05);color:#fff;font:inherit;outline:none}.jnxShopForm textarea{grid-column:1/-1;min-height:80px;resize:vertical}.jnxShopFormRow{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}.jnxShopToggle{display:flex;align-items:center;gap:7px;font-size:12px;color:#aaa}.jnxShopAdminSave{background:#8b72d9;color:#fff}.jnxShopHint{grid-column:1/-1;min-height:16px;text-align:right;color:#aaa;font-size:11px}
+      html.jnxLight #jnxPointsShopBox{background:#fff;color:#242130;border-color:rgba(100,75,180,.2)}html.jnxLight .jnxShopItem,html.jnxLight .jnxShopBalance{background:#f8f6ff;border-color:rgba(100,75,180,.18)}html.jnxLight .jnxShopDesc,html.jnxLight .jnxShopSub,html.jnxLight .jnxShopBalance{color:#716a80}html.jnxLight .jnxShopBalance b{color:#242130}html.jnxLight #jnxPointsShopClose{background:#eee9fa;color:#31274f;border-color:rgba(100,75,180,.28)}html.jnxLight .jnxShopEdit,html.jnxLight .jnxShopAdminNew{background:#f0ebfb;color:#31274f}html.jnxLight .jnxShopForm textarea,html.jnxLight .jnxShopForm input{background:#fff;color:#242130;border-color:rgba(100,75,180,.22)}
+      @media(max-width:600px){#jnxPointsShopModal{padding:8px}#jnxPointsShopBox{width:100%;max-height:92dvh;padding:22px 16px;border-radius:19px}.jnxShopHead{display:block}.jnxShopBalance{display:inline-block;margin-top:12px}.jnxShopGrid{grid-template-columns:1fr}.jnxShopForm{grid-template-columns:72px 1fr}.jnxShopForm input[name="price"]{grid-column:1/-1}.jnxShopFormRow{align-items:flex-start;flex-direction:column}.jnxShopAdminSave{width:100%}}
+    `;document.head.appendChild(s);
+  }
+
+  function buildUI(){
+    addStyles();
+    if(document.getElementById('jnxPointsShopModal'))return;
+    const modal=document.createElement('div');modal.id='jnxPointsShopModal';modal.innerHTML=`
+      <section id="jnxPointsShopBox">
+        <button id="jnxPointsShopClose" aria-label="关闭">×</button>
+        <div class="jnxShopHead"><div><h2>🛍️ 积分商店</h2><div class="jnxShopSub">使用每日任务获得的积分兑换商品。</div></div><div class="jnxShopBalance">可用积分<b id="jnxShopBalance">0</b></div></div>
+        <div class="jnxShopGrid" id="jnxShopGrid"></div>
+        <section id="jnxShopAdmin"><div class="jnxShopAdminTop"><h3>商品编辑</h3><button class="jnxShopAdminNew" id="jnxShopAdminNew" type="button">＋ 新增商品</button></div>
+          <form class="jnxShopForm" id="jnxShopForm">
+            <input name="icon" maxlength="16" placeholder="🎁" aria-label="图标">
+            <input name="title" maxlength="80" placeholder="商品名称" required>
+            <input name="price" type="number" min="0" max="1000000" step="1" placeholder="价格" required>
+            <textarea name="description" maxlength="500" placeholder="商品说明 / 兑换内容"></textarea>
+            <div class="jnxShopFormRow"><label class="jnxShopToggle"><input name="active" type="checkbox" checked> 上架</label><label class="jnxShopToggle">排序 <input name="sort" type="number" value="0" style="width:72px"></label><button class="jnxShopAdminSave" type="submit">保存商品</button></div>
+            <div class="jnxShopHint" id="jnxShopHint"></div>
+          </form>
+        </section>
+      </section>`;
+    document.body.appendChild(modal);
+    const close=()=>modal.classList.remove('open');document.getElementById('jnxPointsShopClose').onclick=close;modal.addEventListener('click',e=>{if(e.target===modal)close()});
+    document.getElementById('jnxShopAdminNew').onclick=()=>editItem(null);
+    document.getElementById('jnxShopForm').addEventListener('submit',saveItem);
+    addEntries();
+  }
+
+  function addEntries(attempt=0){
+    const menu=document.querySelector('.jnxMenu');
+    if(menu&&!menu.querySelector('[data-a="shop"]')){
+      const b=document.createElement('button');b.className='jnxItem';b.dataset.a='shop';b.textContent='🛍️ 积分商店';b.onclick=e=>{e.stopPropagation();openShop();menu.classList.remove('open')};menu.appendChild(b);
+    }
+    const pointsHead=document.querySelector('.jnxPointsHead');
+    if(pointsHead&&!document.getElementById('jnxOpenShopFromPoints')){
+      const b=document.createElement('button');b.id='jnxOpenShopFromPoints';b.type='button';b.textContent='🛍️ 积分商店';b.style.cssText='margin-top:12px;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:8px 11px;background:rgba(255,255,255,.07);color:inherit;cursor:pointer;font-weight:700';b.onclick=openShop;pointsHead.appendChild(b);
+    }
+    if(attempt<30&&(!menu||!pointsHead))setTimeout(()=>addEntries(attempt+1),250);
+  }
+
+  function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+
+  function render(){
+    if(!state)return;
+    const bal=document.getElementById('jnxShopBalance');if(bal)bal.textContent=state.balance??0;
+    const admin=document.getElementById('jnxShopAdmin');admin?.classList.toggle('show',!!state.is_admin);
+    const grid=document.getElementById('jnxShopGrid');if(!grid)return;
+    const items=state.items||[];
+    grid.innerHTML=items.length?items.map(item=>{
+      const canBuy=item.is_active&&Number(state.balance)>=Number(item.price);
+      return `<article class="jnxShopItem"><div class="jnxShopIcon">${esc(item.icon||'🎁')}</div><div class="jnxShopTitle">${esc(item.title)}${item.is_active?'':'<span class="jnxShopInactive">未上架</span>'}</div><div class="jnxShopDesc">${esc(item.description||'')}</div><div class="jnxShopMeta"><span class="jnxShopPrice">⭐ ${Number(item.price)||0}</span><div>${state.is_admin?`<button class="jnxShopEdit" data-edit="${item.id}">编辑</button>`:''} ${item.is_active?`<button class="jnxShopRedeem" data-buy="${item.id}" ${canBuy?'':'disabled'}>${canBuy?'兑换':'积分不足'}</button>`:''}</div></div></article>`;
+    }).join(''):'<div class="jnxShopEmpty">商店还没有商品。</div>';
+    grid.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editItem(Number(b.dataset.edit)));
+    grid.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>redeem(Number(b.dataset.buy),b));
+  }
+
+  async function refresh(){
+    if(!db||!user)return;
+    const r=await db.rpc('get_points_shop');if(r.error){console.error('Shop load error',r.error);return;}
+    state=r.data;render();
+  }
+
+  function editItem(id){
+    if(!state?.is_admin)return;
+    editingId=id;
+    const item=id?(state.items||[]).find(x=>Number(x.id)===Number(id)):null;
+    const f=document.getElementById('jnxShopForm');if(!f)return;
+    f.elements.icon.value=item?.icon||'🎁';f.elements.title.value=item?.title||'';f.elements.price.value=item?.price??'';f.elements.description.value=item?.description||'';f.elements.active.checked=item?!!item.is_active:true;f.elements.sort.value=item?.sort_order??0;
+    f.elements.title.focus();
+  }
+
+  async function saveItem(e){
+    e.preventDefault();if(!state?.is_admin)return;
+    const f=e.currentTarget,h=document.getElementById('jnxShopHint');
+    const title=f.elements.title.value.trim(),price=Number(f.elements.price.value);
+    if(!title||!Number.isInteger(price)||price<0){if(h)h.textContent='请填写有效的商品名称和整数价格';return;}
+    const btn=f.querySelector('.jnxShopAdminSave');btn.disabled=true;
+    const r=await db.rpc('admin_upsert_points_shop_item',{p_id:editingId,p_title:title,p_description:f.elements.description.value.trim(),p_price:price,p_icon:f.elements.icon.value.trim()||'🎁',p_is_active:f.elements.active.checked,p_sort_order:Number(f.elements.sort.value)||0});
+    btn.disabled=false;
+    if(r.error){console.error('Shop save error',r.error);if(h)h.textContent='保存失败';return;}
+    if(h)h.textContent='已保存 ✓';editingId=Number(r.data);await refresh();setTimeout(()=>{if(h)h.textContent=''},1500);
+  }
+
+  async function redeem(id,button){
+    const item=(state?.items||[]).find(x=>Number(x.id)===Number(id));if(!item)return;
+    if(!confirm(`确定使用 ${item.price} 积分兑换「${item.title}」吗？`))return;
+    button.disabled=true;
+    const r=await db.rpc('redeem_points_shop_item',{p_item_id:id});
+    if(r.error){console.error('Redeem error',r.error);alert(r.error.message?.includes('insufficient')?'积分不足':'兑换失败，请稍后再试');button.disabled=false;return;}
+    alert(`兑换成功：${item.title}`);
+    await refresh();
+    window.__jnxRefreshPoints?.();
+  }
+
+  async function openShop(){document.getElementById('jnxPointsShopModal')?.classList.add('open');await refresh();}
+  window.__jnxOpenPointsShop=openShop;
+
+  async function start(){
+    try{await waitForSupabase();}catch(e){console.error(e);return;}
+    db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);buildUI();
+    const a=await db.auth.getUser();user=a.data?.user||null;if(user)await refresh();
+    db.auth.onAuthStateChange(async(_event,session)=>{user=session?.user||null;state=null;if(user)await refresh();else render();});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
