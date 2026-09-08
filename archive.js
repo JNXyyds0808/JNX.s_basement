@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const readerContent = document.getElementById('readerContent');
   const readerNotesWrap = document.getElementById('readerNotesWrap');
   const readerNotes = document.getElementById('readerNotes');
+
   let records = [];
   let loadedForUserId = null;
 
@@ -33,7 +34,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const [y,m,d] = value.split('-');
     return `${y}/${Number(m)}/${Number(d)}`;
   };
-  const normalize = value => (value || '').toString().toLowerCase();
+
+  const normalize = value => (value || '').toString().toLowerCase().trim();
   const usernameToEmail = username => `${username.toLowerCase().trim()}@jnx.local`;
   const getUserLabel = user => user?.user_metadata?.display_name || user?.user_metadata?.username || user?.email?.split('@')[0] || 'JNX User';
 
@@ -81,49 +83,94 @@ document.addEventListener('DOMContentLoaded', async () => {
     return record.series_name === filter;
   }
 
-  function searchScore(record, q) {
-    if (!q) return 0;
-    let score = 0;
+  function getSearchTerms(raw) {
+    const clean = normalize(raw);
+    if (!clean) return [];
+    return clean.split(/\s+/).filter(Boolean);
+  }
+
+  function scoreTerm(record, term) {
     const title = normalize(record.title);
     const location = normalize(record.location);
     const keywords = (record.keywords || []).map(normalize);
     const content = normalize(record.content);
-    const secondary = [record.content_type, record.series_name, record.preserve_level].map(normalize);
 
-    // Metadata is intentionally much stronger than body-text matches.
-    if (title === q) score += 120;
-    else if (title.startsWith(q)) score += 100;
-    else if (title.includes(q)) score += 80;
+    let metaScore = 0;
+    let bodyScore = 0;
 
-    if (location === q) score += 100;
-    else if (location.startsWith(q)) score += 85;
-    else if (location.includes(q)) score += 70;
+    // Highest-priority fields: title, location, keywords.
+    if (title === term) metaScore += 1200;
+    else if (title.startsWith(term)) metaScore += 1000;
+    else if (title.includes(term)) metaScore += 850;
 
-    if (keywords.some(k => k === q)) score += 100;
-    else if (keywords.some(k => k.startsWith(q))) score += 85;
-    else if (keywords.some(k => k.includes(q))) score += 70;
+    if (location === term) metaScore += 1100;
+    else if (location.startsWith(term)) metaScore += 950;
+    else if (location.includes(term)) metaScore += 800;
 
-    if (secondary.some(v => v.includes(q))) score += 25;
-    if (content.includes(q)) score += 10;
-    return score;
+    if (keywords.some(k => k === term)) metaScore += 1100;
+    else if (keywords.some(k => k.startsWith(term))) metaScore += 950;
+    else if (keywords.some(k => k.includes(term))) metaScore += 800;
+
+    // Body is searchable, but deliberately much weaker.
+    if (content.includes(term)) bodyScore += 40;
+
+    return {
+      matched: metaScore > 0 || bodyScore > 0,
+      metaScore,
+      bodyScore
+    };
+  }
+
+  function scoreRecord(record, terms) {
+    if (!terms.length) return { matched: true, tier: 0, score: 0 };
+
+    let totalMeta = 0;
+    let totalBody = 0;
+    let metadataTerms = 0;
+
+    for (const term of terms) {
+      const part = scoreTerm(record, term);
+      // Every word typed by the user must appear somewhere in the record.
+      if (!part.matched) return { matched: false, tier: 99, score: 0 };
+      if (part.metaScore > 0) metadataTerms += 1;
+      totalMeta += part.metaScore;
+      totalBody += part.bodyScore;
+    }
+
+    // Tier 0: every search term appears in title/location/keywords.
+    // Tier 1: at least one term appears in title/location/keywords.
+    // Tier 2: body-only match. This guarantees metadata matches come first.
+    const tier = metadataTerms === terms.length ? 0 : metadataTerms > 0 ? 1 : 2;
+    return {
+      matched: true,
+      tier,
+      score: totalMeta + totalBody
+    };
   }
 
   function render() {
-    const q = normalize(searchInput.value.trim());
+    const terms = getSearchTerms(searchInput.value);
     const year = yearFilter.value;
     const series = seriesFilter.value;
+
     const filtered = records
-      .map((record, index) => ({ record, index, score: searchScore(record, q) }))
+      .map((record, originalIndex) => {
+        const search = scoreRecord(record, terms);
+        return { record, originalIndex, ...search };
+      })
       .filter(item => {
         const record = item.record;
         if (year && !record.published_date?.startsWith(year)) return false;
         if (!matchesSeries(record, series)) return false;
-        if (q && item.score === 0) return false;
-        return true;
+        return item.matched;
       })
       .sort((a, b) => {
-        if (q && b.score !== a.score) return b.score - a.score;
-        return a.index - b.index;
+        if (terms.length) {
+          if (a.tier !== b.tier) return a.tier - b.tier;
+          if (a.score !== b.score) return b.score - a.score;
+        }
+        // Preserve the original newest-to-oldest database order as tie-breaker.
+        return a.originalIndex - b.originalIndex;
       })
       .map(item => item.record);
 
@@ -143,8 +190,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     readerTitle.textContent = record.title;
     readerTags.innerHTML = (record.keywords || []).map(k=>`<span class="chip">${escapeHtml(k)}</span>`).join('');
     readerContent.textContent = record.content || '';
-    if (record.notes) { readerNotesWrap.hidden = false; readerNotes.textContent = record.notes; }
-    else { readerNotesWrap.hidden = true; readerNotes.textContent = ''; }
+    if (record.notes) {
+      readerNotesWrap.hidden = false;
+      readerNotes.textContent = record.notes;
+    } else {
+      readerNotesWrap.hidden = true;
+      readerNotes.textContent = '';
+    }
     dialog.showModal();
   }
 
@@ -193,8 +245,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const record = records.find(r => String(r.id) === card.dataset.id);
     if (record) openRecord(record);
   });
-  [searchInput, yearFilter, seriesFilter].forEach(el => el.addEventListener(el === searchInput ? 'input' : 'change', render));
-  clearFilters.addEventListener('click', () => { searchInput.value=''; yearFilter.value=''; seriesFilter.value=''; render(); });
+
+  searchInput.addEventListener('input', render);
+  yearFilter.addEventListener('change', render);
+  seriesFilter.addEventListener('change', render);
+  clearFilters.addEventListener('click', () => {
+    searchInput.value = '';
+    yearFilter.value = '';
+    seriesFilter.value = '';
+    render();
+  });
   closeDialog.addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
   loginButton.addEventListener('click', loginHere);
