@@ -31,7 +31,8 @@
     @media(min-width:601px) and (max-width:1100px){
       #home main{transform:translateY(-20px)!important}
       #home main .small-text{margin-bottom:8px!important;font-size:10px!important;letter-spacing:2px!important}
-      #home main h1{font-size:clamp(42px,7vw,66px)!important;line-height:.95!important;margin-bottom:12px!important}
+      #home main h1{font-size:clamp(42px,7vw,66px)!important;line-height:.95!important;margin-bottom:12px!important;white-space:nowrap!important}
+      #home main h1 span{display:inline!important;white-space:inherit!important}
       .jnxGrid{margin-top:16px!important;gap:10px!important}
       .jnxCard{min-height:72px!important;padding:11px 13px!important;border-radius:14px!important}
       .jnxIcon{font-size:19px!important;margin-bottom:4px!important}
@@ -42,6 +43,7 @@
     @media(min-width:900px) and (max-width:1100px) and (orientation:landscape){
       #home main{transform:translateY(-26px)!important}
       #home main h1{font-size:52px!important;margin-bottom:10px!important}
+      #home main h1 span{display:inline!important}
       .jnxGrid{margin-top:12px!important;gap:9px!important}
       .jnxCard{min-height:68px!important;padding:10px 12px!important}
     }
