@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>蒋文涛写作档案 · JNX.</title>
-  <link rel="stylesheet" href="archive.css?v=1">
+  <link rel="stylesheet" href="archive.css?v=2">
 </head>
 <body>
   <header class="topbar">
@@ -26,8 +26,14 @@
       <div class="gate-card">
         <div class="gate-icon">🔒</div>
         <h2>需要登录 JNX 账号</h2>
-        <p>这个档案库与 JNX 主站共用账号。请先返回首页登录。</p>
-        <a href="index.html#login" class="primary-link">返回 JNX 登录</a>
+        <p>这里和 JNX 主站使用完全相同的账号。若浏览器没有自动带入登录状态，可直接在这里用原来的 JNX 用户名和密码登录。</p>
+        <div class="archive-login-form">
+          <input id="archiveLoginUsername" type="text" placeholder="JNX 用户名" autocomplete="username">
+          <input id="archiveLoginPassword" type="password" placeholder="密码" autocomplete="current-password">
+          <button id="archiveLoginButton" type="button">登录并进入档案</button>
+          <div id="archiveLoginStatus" class="archive-login-status"></div>
+        </div>
+        <a href="index.html#login" class="secondary-login-link">返回 JNX 首页登录</a>
       </div>
     </section>
 
@@ -72,6 +78,6 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="archive.js?v=1"></script>
+  <script src="archive.js?v=2"></script>
 </body>
 </html>
