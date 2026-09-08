@@ -81,17 +81,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     return record.series_name === filter;
   }
 
+  function searchScore(record, q) {
+    if (!q) return 0;
+    let score = 0;
+    const title = normalize(record.title);
+    const location = normalize(record.location);
+    const keywords = (record.keywords || []).map(normalize);
+    const content = normalize(record.content);
+    const secondary = [record.content_type, record.series_name, record.preserve_level].map(normalize);
+
+    // Metadata is intentionally much stronger than body-text matches.
+    if (title === q) score += 120;
+    else if (title.startsWith(q)) score += 100;
+    else if (title.includes(q)) score += 80;
+
+    if (location === q) score += 100;
+    else if (location.startsWith(q)) score += 85;
+    else if (location.includes(q)) score += 70;
+
+    if (keywords.some(k => k === q)) score += 100;
+    else if (keywords.some(k => k.startsWith(q))) score += 85;
+    else if (keywords.some(k => k.includes(q))) score += 70;
+
+    if (secondary.some(v => v.includes(q))) score += 25;
+    if (content.includes(q)) score += 10;
+    return score;
+  }
+
   function render() {
     const q = normalize(searchInput.value.trim());
     const year = yearFilter.value;
     const series = seriesFilter.value;
-    const filtered = records.filter(record => {
-      if (year && !record.published_date?.startsWith(year)) return false;
-      if (!matchesSeries(record, series)) return false;
-      if (!q) return true;
-      const haystack = [record.title,record.location,record.content,record.content_type,record.series_name,record.preserve_level,...(record.keywords || [])].map(normalize).join('\n');
-      return haystack.includes(q);
-    });
+    const filtered = records
+      .map((record, index) => ({ record, index, score: searchScore(record, q) }))
+      .filter(item => {
+        const record = item.record;
+        if (year && !record.published_date?.startsWith(year)) return false;
+        if (!matchesSeries(record, series)) return false;
+        if (q && item.score === 0) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        if (q && b.score !== a.score) return b.score - a.score;
+        return a.index - b.index;
+      })
+      .map(item => item.record);
 
     resultCount.textContent = `共 ${filtered.length} 篇`;
     emptyState.hidden = filtered.length !== 0;
