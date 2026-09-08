@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const authGate = document.getElementById('authGate');
   const archiveApp = document.getElementById('archiveApp');
   const accountName = document.getElementById('accountName');
+  const loginUsername = document.getElementById('archiveLoginUsername');
+  const loginPassword = document.getElementById('archiveLoginPassword');
+  const loginButton = document.getElementById('archiveLoginButton');
+  const loginStatus = document.getElementById('archiveLoginStatus');
   const searchInput = document.getElementById('searchInput');
   const yearFilter = document.getElementById('yearFilter');
   const seriesFilter = document.getElementById('seriesFilter');
@@ -21,35 +25,34 @@ document.addEventListener('DOMContentLoaded', async () => {
   const readerContent = document.getElementById('readerContent');
   const readerNotesWrap = document.getElementById('readerNotesWrap');
   const readerNotes = document.getElementById('readerNotes');
-
   let records = [];
+  let loadedForUserId = null;
 
   const fmtDate = value => {
     if (!value) return '日期待补';
     const [y,m,d] = value.split('-');
     return `${y}/${Number(m)}/${Number(d)}`;
   };
-
   const normalize = value => (value || '').toString().toLowerCase();
+  const usernameToEmail = username => `${username.toLowerCase().trim()}@jnx.local`;
+  const getUserLabel = user => user?.user_metadata?.display_name || user?.user_metadata?.username || user?.email?.split('@')[0] || 'JNX User';
 
-  const getUserLabel = user =>
-    user?.user_metadata?.display_name ||
-    user?.user_metadata?.username ||
-    user?.email?.split('@')[0] ||
-    'JNX User';
-
-  const showLoggedOut = () => {
+  function showLoggedOut() {
     authGate.hidden = false;
     archiveApp.hidden = true;
     accountName.textContent = '';
-  };
+    loadedForUserId = null;
+  }
 
-  const showLoggedIn = async user => {
+  async function showLoggedIn(user) {
     authGate.hidden = true;
     archiveApp.hidden = false;
     accountName.textContent = getUserLabel(user);
-    await loadArchive();
-  };
+    if (loadedForUserId !== user.id) {
+      loadedForUserId = user.id;
+      await loadArchive();
+    }
+  }
 
   async function loadArchive() {
     resultCount.textContent = '正在读取档案…';
@@ -82,20 +85,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const q = normalize(searchInput.value.trim());
     const year = yearFilter.value;
     const series = seriesFilter.value;
-
     const filtered = records.filter(record => {
       if (year && !record.published_date?.startsWith(year)) return false;
       if (!matchesSeries(record, series)) return false;
       if (!q) return true;
-      const haystack = [
-        record.title,
-        record.location,
-        record.content,
-        record.content_type,
-        record.series_name,
-        record.preserve_level,
-        ...(record.keywords || [])
-      ].map(normalize).join('\n');
+      const haystack = [record.title,record.location,record.content,record.content_type,record.series_name,record.preserve_level,...(record.keywords || [])].map(normalize).join('\n');
       return haystack.includes(q);
     });
 
@@ -105,17 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const number = record.series_number ? `#${String(record.series_number).padStart(3,'0')}` : '非编号';
       const chips = (record.keywords || []).slice(0,4).map(k=>`<span class="chip">${escapeHtml(k)}</span>`).join('');
       const snippet = (record.content || '').replace(/\s+/g,' ').trim();
-      return `
-        <button class="article-card" type="button" data-id="${record.id}">
-          <div class="article-top">
-            <span>${escapeHtml(fmtDate(record.published_date))} · ${escapeHtml(number)}</span>
-            <span class="preserve">${escapeHtml(record.preserve_level || '')}</span>
-          </div>
-          <h2>${escapeHtml(record.title)}</h2>
-          ${record.location ? `<div class="article-location">📍 ${escapeHtml(record.location)}</div>` : ''}
-          <div class="article-snippet">${escapeHtml(snippet)}</div>
-          <div class="chips">${chips}</div>
-        </button>`;
+      return `<button class="article-card" type="button" data-id="${record.id}"><div class="article-top"><span>${escapeHtml(fmtDate(record.published_date))} · ${escapeHtml(number)}</span><span class="preserve">${escapeHtml(record.preserve_level || '')}</span></div><h2>${escapeHtml(record.title)}</h2>${record.location ? `<div class="article-location">📍 ${escapeHtml(record.location)}</div>` : ''}<div class="article-snippet">${escapeHtml(snippet)}</div><div class="chips">${chips}</div></button>`;
     }).join('');
   }
 
@@ -125,18 +109,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     readerTitle.textContent = record.title;
     readerTags.innerHTML = (record.keywords || []).map(k=>`<span class="chip">${escapeHtml(k)}</span>`).join('');
     readerContent.textContent = record.content || '';
-    if (record.notes) {
-      readerNotesWrap.hidden = false;
-      readerNotes.textContent = record.notes;
-    } else {
-      readerNotesWrap.hidden = true;
-      readerNotes.textContent = '';
-    }
+    if (record.notes) { readerNotesWrap.hidden = false; readerNotes.textContent = record.notes; }
+    else { readerNotesWrap.hidden = true; readerNotes.textContent = ''; }
     dialog.showModal();
   }
 
   function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+  }
+
+  async function tryExistingSession() {
+    const { data: sessionData } = await db.auth.getSession();
+    if (sessionData?.session?.user) {
+      await showLoggedIn(sessionData.session.user);
+      return true;
+    }
+    const { data: userData } = await db.auth.getUser();
+    if (userData?.user) {
+      await showLoggedIn(userData.user);
+      return true;
+    }
+    showLoggedOut();
+    return false;
+  }
+
+  async function loginHere() {
+    const username = loginUsername.value.trim();
+    const password = loginPassword.value;
+    if (!username || !password) {
+      loginStatus.textContent = '请输入用户名和密码。';
+      return;
+    }
+    loginButton.disabled = true;
+    loginStatus.textContent = '正在登录…';
+    const { data, error } = await db.auth.signInWithPassword({ email: usernameToEmail(username), password });
+    loginButton.disabled = false;
+    if (error) {
+      console.error(error);
+      loginStatus.textContent = '用户名或密码不正确。';
+      return;
+    }
+    loginStatus.textContent = '';
+    if (data?.user) await showLoggedIn(data.user);
   }
 
   articleList.addEventListener('click', event => {
@@ -145,23 +159,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const record = records.find(r => String(r.id) === card.dataset.id);
     if (record) openRecord(record);
   });
-
   [searchInput, yearFilter, seriesFilter].forEach(el => el.addEventListener(el === searchInput ? 'input' : 'change', render));
-  clearFilters.addEventListener('click', () => {
-    searchInput.value = '';
-    yearFilter.value = '';
-    seriesFilter.value = '';
-    render();
-  });
+  clearFilters.addEventListener('click', () => { searchInput.value=''; yearFilter.value=''; seriesFilter.value=''; render(); });
   closeDialog.addEventListener('click', () => dialog.close());
-  dialog.addEventListener('click', event => {
-    if (event.target === dialog) dialog.close();
-  });
+  dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  loginButton.addEventListener('click', loginHere);
+  loginPassword.addEventListener('keydown', e => { if (e.key === 'Enter') loginHere(); });
 
-  const { data: { user } } = await db.auth.getUser();
-  if (user) await showLoggedIn(user);
-  else showLoggedOut();
-
+  await tryExistingSession();
   db.auth.onAuthStateChange(async (_event, session) => {
     if (session?.user) await showLoggedIn(session.user);
     else showLoggedOut();
