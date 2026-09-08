@@ -29,10 +29,22 @@
     #settingsModal .settings-box{max-height:88vh!important;overflow:auto!important}
 
     @media(min-width:601px) and (max-width:1100px){
-      #home main{transform:translateY(-20px)!important}
+      #home main{width:100%!important;max-width:none!important;transform:translateY(-20px)!important}
       #home main .small-text{margin-bottom:8px!important;font-size:10px!important;letter-spacing:2px!important}
-      #home main h1{font-size:clamp(42px,7vw,66px)!important;line-height:.95!important;margin-bottom:12px!important;white-space:nowrap!important}
-      #home main h1 span{display:inline!important;white-space:inherit!important}
+      #home main h1{
+        width:100%!important;
+        max-width:none!important;
+        display:flex!important;
+        flex-direction:row!important;
+        flex-wrap:nowrap!important;
+        justify-content:center!important;
+        align-items:baseline!important;
+        gap:.16em!important;
+        white-space:nowrap!important;
+        line-height:.95!important;
+        margin-bottom:12px!important;
+      }
+      #home main h1 span{display:inline!important;flex:0 0 auto!important;white-space:nowrap!important}
       .jnxGrid{margin-top:16px!important;gap:10px!important}
       .jnxCard{min-height:72px!important;padding:11px 13px!important;border-radius:14px!important}
       .jnxIcon{font-size:19px!important;margin-bottom:4px!important}
@@ -42,13 +54,29 @@
 
     @media(min-width:900px) and (max-width:1100px) and (orientation:landscape){
       #home main{transform:translateY(-26px)!important}
-      #home main h1{font-size:52px!important;margin-bottom:10px!important}
-      #home main h1 span{display:inline!important}
+      #home main h1{margin-bottom:10px!important}
       .jnxGrid{margin-top:12px!important;gap:9px!important}
       .jnxCard{min-height:68px!important;padding:10px 12px!important}
     }
   `;
   document.head.appendChild(css);
+
+  function forceTabletTitle(){
+    const title=document.querySelector('#home main h1');
+    if(!title || window.innerWidth<601 || window.innerWidth>1100)return;
+    title.style.setProperty('display','flex','important');
+    title.style.setProperty('flex-direction','row','important');
+    title.style.setProperty('flex-wrap','nowrap','important');
+    title.style.setProperty('white-space','nowrap','important');
+    title.style.setProperty('width','100%','important');
+    title.style.setProperty('max-width','none','important');
+    title.style.setProperty('justify-content','center','important');
+    title.querySelectorAll('span').forEach(span=>{
+      span.style.setProperty('display','inline','important');
+      span.style.setProperty('white-space','nowrap','important');
+      span.style.setProperty('flex','0 0 auto','important');
+    });
+  }
 
   function promote(){
     document.querySelectorAll('.jnxWindow [class*="modal"],.jnxWindow [id*="Modal"],.jnxWindow [id*="modal"]').forEach(el=>{
@@ -68,6 +96,7 @@
   }
 
   function init(){
+    forceTabletTitle();
     promote();
     loadScriptOnce('site-changelog.js?v=1','data-jnx-changelog-loader');
     loadScriptOnce('profile-enhancement.js?v=2','data-jnx-profile-enhancement-loader');
@@ -76,6 +105,7 @@
     loadScriptOnce('admin-notifications.js?v=1','data-jnx-admin-notifications-loader');
   }
 
+  window.addEventListener('resize',forceTabletTitle);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
   else init();
 })();
