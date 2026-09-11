@@ -4,80 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>蒋文涛写作档案 · JNX.</title>
-  <link rel="stylesheet" href="archive.css?v=4">
+  <link rel="stylesheet" href="archive.css?v=5">
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="index.html">JNX.</a>
-    <div class="top-actions">
-      <span id="accountName" class="account-name"></span>
-      <a class="home-link" href="index.html">返回首页</a>
-    </div>
-  </header>
-
+  <header class="topbar"><a class="brand" href="index.html">JNX.</a><div class="top-actions"><span id="accountName" class="account-name"></span><a class="home-link" href="index.html">返回首页</a></div></header>
   <main class="shell">
-    <section class="hero">
-      <p class="eyebrow">PRIVATE ARCHIVE</p>
-      <h1>蒋文涛写作档案</h1>
-      <p class="subtitle">朋友圈、公众号与寻味之旅原稿的私人整理库。</p>
-    </section>
-
-    <section id="authGate" class="gate" hidden>
-      <div class="gate-card">
-        <div class="gate-icon">🔒</div>
-        <h2>需要登录 JNX 账号</h2>
-        <p>这里和 JNX 主站使用完全相同的账号。若浏览器没有自动带入登录状态，可直接在这里用原来的 JNX 用户名和密码登录。</p>
-        <div class="archive-login-form">
-          <input id="archiveLoginUsername" type="text" placeholder="JNX 用户名" autocomplete="username">
-          <input id="archiveLoginPassword" type="password" placeholder="密码" autocomplete="current-password">
-          <button id="archiveLoginButton" type="button">登录并进入档案</button>
-          <div id="archiveLoginStatus" class="archive-login-status"></div>
-        </div>
-        <a href="index.html#login" class="secondary-login-link">返回 JNX 首页登录</a>
-      </div>
-    </section>
-
+    <section class="hero"><p class="eyebrow">PRIVATE ARCHIVE</p><h1>蒋文涛写作档案</h1><p class="subtitle">朋友圈、公众号与寻味之旅原稿的私人整理库。</p></section>
+    <section id="authGate" class="gate" hidden><div class="gate-card"><div class="gate-icon">🔒</div><h2>需要登录 JNX 账号</h2><p>这里和 JNX 主站使用完全相同的账号。若浏览器没有自动带入登录状态，可直接在这里用原来的 JNX 用户名和密码登录。</p><div class="archive-login-form"><input id="archiveLoginUsername" type="text" placeholder="JNX 用户名" autocomplete="username"><input id="archiveLoginPassword" type="password" placeholder="密码" autocomplete="current-password"><button id="archiveLoginButton" type="button">登录并进入档案</button><div id="archiveLoginStatus" class="archive-login-status"></div></div><a href="index.html#login" class="secondary-login-link">返回 JNX 首页登录</a></div></section>
     <section id="archiveApp" hidden>
-      <div class="toolbar">
-        <label class="search-box">
-          <span>⌕</span>
-          <input id="searchInput" type="search" placeholder="搜索标题、地点、关键词或正文…" autocomplete="off">
-        </label>
-        <select id="yearFilter" aria-label="年份">
-          <option value="">全部年份</option>
-        </select>
-        <select id="seriesFilter" aria-label="系列">
-          <option value="">全部系列</option>
-          <option value="寻味之旅">寻味之旅</option>
-          <option value="非系列随笔">非系列随笔</option>
-        </select>
-      </div>
-
-      <div class="summary-row">
-        <span id="resultCount">加载中…</span>
-        <button id="clearFilters" type="button">清除筛选</button>
-      </div>
-
-      <div id="articleList" class="article-list"></div>
-      <div id="emptyState" class="empty-state" hidden>没有找到符合条件的文章。</div>
+      <div class="toolbar"><label class="search-box"><span>⌕</span><input id="searchInput" type="search" placeholder="搜索标题、地点、关键词或正文…" autocomplete="off"></label><select id="yearFilter" aria-label="年份"><option value="">全部年份</option></select><select id="seriesFilter" aria-label="系列"><option value="">全部系列</option><option value="寻味之旅">寻味之旅</option><option value="非系列随笔">非系列随笔</option></select></div>
+      <div class="summary-row"><span id="resultCount">加载中…</span><button id="clearFilters" type="button">清除筛选</button></div><div id="articleList" class="article-list"></div><div id="emptyState" class="empty-state" hidden>没有找到符合条件的文章。</div>
     </section>
   </main>
-
-  <dialog id="articleDialog" class="article-dialog">
-    <article class="reader">
-      <button id="closeDialog" class="close-button" type="button" aria-label="关闭">×</button>
-      <div id="readerMeta" class="reader-meta"></div>
-      <h2 id="readerTitle"></h2>
-      <div id="readerTags" class="reader-tags"></div>
-      <div id="readerContent" class="reader-content"></div>
-      <div id="readerNotesWrap" class="reader-notes-wrap" hidden>
-        <h3>档案备注</h3>
-        <div id="readerNotes" class="reader-notes"></div>
-      </div>
-    </article>
-  </dialog>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="archive.js?v=4"></script>
-</body>
-</html>
+  <dialog id="articleDialog" class="article-dialog"><article class="reader"><button id="closeDialog" class="close-button" type="button" aria-label="关闭">×</button><div id="readerMeta" class="reader-meta"></div><h2 id="readerTitle"></h2><div id="readerTags" class="reader-tags"></div><div id="readerContent" class="reader-content"></div><div id="readerNotesWrap" class="reader-notes-wrap" hidden><h3>档案备注</h3><div id="readerNotes" class="reader-notes"></div></div><section class="comment-section"><div class="comment-heading"><h3>作品评论</h3><span id="commentCount">0 条</span></div><div id="commentList" class="comment-list"></div><div id="commentEmpty" class="comment-empty">还没有评论。</div><div class="comment-compose"><textarea id="commentInput" maxlength="1000" rows="3" placeholder="写下对这篇作品的评论…"></textarea><div class="comment-compose-bottom"><span id="commentStatus"></span><button id="commentSubmit" type="button">发表评论</button></div></div></section></article></dialog>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="archive.js?v=5"></script>
+</body></html>
