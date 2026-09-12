@@ -1,25 +1,361 @@
-document.addEventListener('DOMContentLoaded', async () => {
-  const SUPABASE_URL='https://qdehfgjifhtczkrpuadl.supabase.co',SUPABASE_KEY='sb_publishable_ChrvUYG2OES6q2kCpkBJcA_uaAmfOVp';
-  const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-  const $=id=>document.getElementById(id);
-  const authGate=$('authGate'),archiveApp=$('archiveApp'),accountName=$('accountName'),loginUsername=$('archiveLoginUsername'),loginPassword=$('archiveLoginPassword'),loginButton=$('archiveLoginButton'),loginStatus=$('archiveLoginStatus'),searchInput=$('searchInput'),yearFilter=$('yearFilter'),seriesFilter=$('seriesFilter'),clearFilters=$('clearFilters'),resultCount=$('resultCount'),articleList=$('articleList'),emptyState=$('emptyState'),dialog=$('articleDialog'),closeDialog=$('closeDialog'),readerMeta=$('readerMeta'),readerTitle=$('readerTitle'),readerTags=$('readerTags'),readerContent=$('readerContent'),readerNotesWrap=$('readerNotesWrap'),readerNotes=$('readerNotes'),commentCount=$('commentCount'),commentList=$('commentList'),commentEmpty=$('commentEmpty'),commentInput=$('commentInput'),commentSubmit=$('commentSubmit'),commentStatus=$('commentStatus');
-  let records=[],loadedForUserId=null,currentUser=null,currentRecord=null;
-  const fmtDate=v=>{if(!v)return'日期待补';const[y,m,d]=v.split('-');return`${y}/${Number(m)}/${Number(d)}`},normalize=v=>(v||'').toString().toLowerCase().trim(),usernameToEmail=u=>`${u.toLowerCase().trim()}@jnx.local`,getUserLabel=u=>u?.user_metadata?.display_name||u?.user_metadata?.username||u?.email?.split('@')[0]||'JNX User';
-  const escapeHtml=v=>String(v??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
-  function showLoggedOut(){currentUser=null;authGate.hidden=false;archiveApp.hidden=true;accountName.textContent='';loadedForUserId=null}
-  async function showLoggedIn(user){currentUser=user;authGate.hidden=true;archiveApp.hidden=false;accountName.textContent=getUserLabel(user);if(loadedForUserId!==user.id){loadedForUserId=user.id;await loadArchive()}}
-  async function loadArchive(){resultCount.textContent='正在读取档案…';const{data,error}=await db.from('wentao_writing_archive').select('id,published_date,series_name,series_number,title,location,content,content_type,keywords,preserve_level,notes,source').order('published_date',{ascending:false,nullsFirst:false}).order('id',{ascending:false});if(error){console.error(error);resultCount.textContent='读取失败';articleList.innerHTML='<div class="empty-state">无法读取档案，请确认账号权限后重试。</div>';return}records=data||[];const years=[...new Set(records.map(r=>r.published_date?.slice(0,4)).filter(Boolean))].sort((a,b)=>b.localeCompare(a));yearFilter.innerHTML='<option value="">全部年份</option>'+years.map(y=>`<option value="${y}">${y}</option>`).join('');render()}
-  function matchesSeries(r,f){if(!f)return true;if(f==='寻味之旅')return(r.series_name||'').startsWith('寻味之旅');return r.series_name===f}
-  function getSearchTerms(raw){const clean=normalize(raw);return clean?clean.split(/\s+/).filter(Boolean):[]}
-  function scoreTerm(r,t){const title=normalize(r.title),location=normalize(r.location),keywords=(r.keywords||[]).map(normalize),content=normalize(r.content);let metaScore=0,bodyScore=0;if(title===t)metaScore+=1200;else if(title.startsWith(t))metaScore+=1000;else if(title.includes(t))metaScore+=850;if(location===t)metaScore+=1100;else if(location.startsWith(t))metaScore+=950;else if(location.includes(t))metaScore+=800;if(keywords.some(k=>k===t))metaScore+=1100;else if(keywords.some(k=>k.startsWith(t)))metaScore+=950;else if(keywords.some(k=>k.includes(t)))metaScore+=800;if(content.includes(t))bodyScore+=40;return{matched:metaScore>0||bodyScore>0,metaScore,bodyScore}}
-  function scoreRecord(r,terms){if(!terms.length)return{matched:true,tier:0,score:0};let totalMeta=0,totalBody=0,metadataTerms=0;for(const t of terms){const p=scoreTerm(r,t);if(!p.matched)return{matched:false,tier:99,score:0};if(p.metaScore>0)metadataTerms++;totalMeta+=p.metaScore;totalBody+=p.bodyScore}return{matched:true,tier:metadataTerms===terms.length?0:metadataTerms>0?1:2,score:totalMeta+totalBody}}
-  function render(){const terms=getSearchTerms(searchInput.value),year=yearFilter.value,series=seriesFilter.value;const filtered=records.map((record,originalIndex)=>({record,originalIndex,...scoreRecord(record,terms)})).filter(i=>(!year||i.record.published_date?.startsWith(year))&&matchesSeries(i.record,series)&&i.matched).sort((a,b)=>terms.length?(a.tier!==b.tier?a.tier-b.tier:a.score!==b.score?b.score-a.score:a.originalIndex-b.originalIndex):a.originalIndex-b.originalIndex).map(i=>i.record);resultCount.textContent=`共 ${filtered.length} 篇`;emptyState.hidden=filtered.length!==0;articleList.innerHTML=filtered.map(r=>{const n=r.series_number?`#${String(r.series_number).padStart(3,'0')}`:'非编号',chips=(r.keywords||[]).slice(0,4).map(k=>`<span class="chip">${escapeHtml(k)}</span>`).join(''),snippet=(r.content||'').replace(/\s+/g,' ').trim();return`<button class="article-card" type="button" data-id="${r.id}"><div class="article-top"><span>${escapeHtml(fmtDate(r.published_date))} · ${escapeHtml(n)}</span><span class="preserve">${escapeHtml(r.preserve_level||'')}</span></div><h2>${escapeHtml(r.title)}</h2>${r.location?`<div class="article-location">📍 ${escapeHtml(r.location)}</div>`:''}<div class="article-snippet">${escapeHtml(snippet)}</div><div class="chips">${chips}</div></button>`}).join('')}
-  async function loadComments(articleId){commentStatus.textContent='';commentList.innerHTML='';commentEmpty.hidden=true;commentCount.textContent='读取中…';const{data,error}=await db.from('wentao_archive_comments').select('id,article_id,user_id,author_name,content,created_at').eq('article_id',articleId).order('created_at',{ascending:true});if(error){console.error(error);commentCount.textContent='评论读取失败';commentEmpty.hidden=false;commentEmpty.textContent='暂时无法读取评论。';return}const rows=data||[];commentCount.textContent=`${rows.length} 条`;commentEmpty.hidden=rows.length>0;commentEmpty.textContent='还没有评论。';commentList.innerHTML=rows.map(c=>`<article class="archive-comment"><div class="archive-comment-head"><span class="archive-comment-author">${escapeHtml(c.author_name)}</span><time class="archive-comment-time">${escapeHtml(new Date(c.created_at).toLocaleString('zh-CN',{year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}))}</time></div><div class="archive-comment-text">${escapeHtml(c.content)}</div>${currentUser?.id===c.user_id?`<button class="archive-comment-delete" type="button" data-comment-id="${c.id}">删除</button>`:''}</article>`).join('')}
-  async function openRecord(r){currentRecord=r;const n=r.series_number?`#${String(r.series_number).padStart(3,'0')}`:'非编号';readerMeta.textContent=[fmtDate(r.published_date),n,r.series_name,r.location].filter(Boolean).join(' · ');readerTitle.textContent=r.title;readerTags.innerHTML=(r.keywords||[]).map(k=>`<span class="chip">${escapeHtml(k)}</span>`).join('');readerContent.textContent=r.content||'';if(r.notes){readerNotesWrap.hidden=false;readerNotes.textContent=r.notes}else{readerNotesWrap.hidden=true;readerNotes.textContent=''}commentInput.value='';dialog.showModal();await loadComments(r.id)}
-  async function submitComment(){if(!currentUser||!currentRecord)return;const content=commentInput.value.trim();if(!content){commentStatus.textContent='请输入评论。';return}commentSubmit.disabled=true;commentStatus.textContent='正在发表…';const{error}=await db.from('wentao_archive_comments').insert({article_id:currentRecord.id,user_id:currentUser.id,author_name:getUserLabel(currentUser),content});commentSubmit.disabled=false;if(error){console.error(error);commentStatus.textContent='发表失败，请重试。';return}commentInput.value='';commentStatus.textContent='已发表';await loadComments(currentRecord.id)}
-  async function deleteComment(id){if(!currentRecord)return;const{error}=await db.from('wentao_archive_comments').delete().eq('id',id);if(error){console.error(error);commentStatus.textContent='删除失败。';return}await loadComments(currentRecord.id)}
-  async function tryExistingSession(){const{data:s}=await db.auth.getSession();if(s?.session?.user){await showLoggedIn(s.session.user);return true}const{data:u}=await db.auth.getUser();if(u?.user){await showLoggedIn(u.user);return true}showLoggedOut();return false}
-  async function loginHere(){const username=loginUsername.value.trim(),password=loginPassword.value;if(!username||!password){loginStatus.textContent='请输入用户名和密码。';return}loginButton.disabled=true;loginStatus.textContent='正在登录…';const{data,error}=await db.auth.signInWithPassword({email:usernameToEmail(username),password});loginButton.disabled=false;if(error){console.error(error);loginStatus.textContent='用户名或密码不正确。';return}loginStatus.textContent='';if(data?.user)await showLoggedIn(data.user)}
-  articleList.addEventListener('click',e=>{const card=e.target.closest('.article-card');if(!card)return;const r=records.find(x=>String(x.id)===card.dataset.id);if(r)openRecord(r)});commentSubmit.addEventListener('click',submitComment);commentInput.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter')submitComment()});commentList.addEventListener('click',e=>{const b=e.target.closest('[data-comment-id]');if(b)deleteComment(b.dataset.commentId)});searchInput.addEventListener('input',render);yearFilter.addEventListener('change',render);seriesFilter.addEventListener('change',render);clearFilters.addEventListener('click',()=>{searchInput.value='';yearFilter.value='';seriesFilter.value='';render()});closeDialog.addEventListener('click',()=>dialog.close());dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});loginButton.addEventListener('click',loginHere);loginPassword.addEventListener('keydown',e=>{if(e.key==='Enter')loginHere()});
-  await tryExistingSession();db.auth.onAuthStateChange(async(_event,session)=>{if(session?.user)await showLoggedIn(session.user);else showLoggedOut()});
+document.addEventListener("DOMContentLoaded", async () => {
+  const SUPABASE_URL = "https://qdehfgjifhtczkrpuadl.supabase.co",
+    SUPABASE_KEY = "sb_publishable_ChrvUYG2OES6q2kCpkBJcA_uaAmfOVp";
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = (id) => document.getElementById(id);
+  const authGate = $("authGate"),
+    archiveApp = $("archiveApp"),
+    accountName = $("accountName"),
+    loginUsername = $("archiveLoginUsername"),
+    loginPassword = $("archiveLoginPassword"),
+    loginButton = $("archiveLoginButton"),
+    loginStatus = $("archiveLoginStatus"),
+    searchInput = $("searchInput"),
+    yearFilter = $("yearFilter"),
+    seriesFilter = $("seriesFilter"),
+    clearFilters = $("clearFilters"),
+    resultCount = $("resultCount"),
+    articleList = $("articleList"),
+    emptyState = $("emptyState"),
+    dialog = $("articleDialog"),
+    closeDialog = $("closeDialog"),
+    readerMeta = $("readerMeta"),
+    readerTitle = $("readerTitle"),
+    readerTags = $("readerTags"),
+    readerContent = $("readerContent"),
+    readerNotesWrap = $("readerNotesWrap"),
+    readerNotes = $("readerNotes"),
+    commentCount = $("commentCount"),
+    commentList = $("commentList"),
+    commentEmpty = $("commentEmpty"),
+    commentInput = $("commentInput"),
+    commentSubmit = $("commentSubmit"),
+    commentStatus = $("commentStatus");
+  let records = [],
+    loadedForUserId = null,
+    currentUser = null,
+    currentRecord = null;
+  const fmtDate = (v) => {
+      if (!v) return "日期待补";
+      const [y, m, d] = v.split("-");
+      return `${y}/${Number(m)}/${Number(d)}`;
+    },
+    normalize = (v) => (v || "").toString().toLowerCase().trim(),
+    usernameToEmail = (u) => `${u.toLowerCase().trim()}@jnx.local`,
+    getUserLabel = (u) =>
+      u?.user_metadata?.display_name ||
+      u?.user_metadata?.username ||
+      u?.email?.split("@")[0] ||
+      "JNX User";
+  const escapeHtml = (v) =>
+    String(v ?? "").replace(
+      /[&<>'"]/g,
+      (ch) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "'": "&#39;",
+          '"': "&quot;",
+        })[ch],
+    );
+  function showLoggedOut() {
+    currentUser = null;
+    authGate.hidden = false;
+    archiveApp.hidden = true;
+    accountName.textContent = "";
+    loadedForUserId = null;
+  }
+  async function showLoggedIn(user) {
+    currentUser = user;
+    authGate.hidden = true;
+    archiveApp.hidden = false;
+    accountName.textContent = getUserLabel(user);
+    if (loadedForUserId !== user.id) {
+      loadedForUserId = user.id;
+      await loadArchive();
+    }
+  }
+  async function loadArchive() {
+    resultCount.textContent = "正在读取档案…";
+    const { data, error } = await db
+      .from("wentao_writing_archive")
+      .select(
+        "id,published_date,series_name,series_number,title,location,content,content_type,keywords,preserve_level,notes,source",
+      )
+      .order("published_date", { ascending: false, nullsFirst: false })
+      .order("id", { ascending: false });
+    if (error) {
+      console.error(error);
+      resultCount.textContent = "读取失败";
+      articleList.innerHTML =
+        '<div class="empty-state">无法读取档案，请确认账号权限后重试。</div>';
+      return;
+    }
+    records = data || [];
+    const years = [
+      ...new Set(
+        records.map((r) => r.published_date?.slice(0, 4)).filter(Boolean),
+      ),
+    ].sort((a, b) => b.localeCompare(a));
+    yearFilter.innerHTML =
+      '<option value="">全部年份</option>' +
+      years.map((y) => `<option value="${y}">${y}</option>`).join("");
+    render();
+  }
+  function matchesSeries(r, f) {
+    if (!f) return true;
+    if (f === "寻味之旅") return (r.series_name || "").startsWith("寻味之旅");
+    return r.series_name === f;
+  }
+  function getSearchTerms(raw) {
+    const clean = normalize(raw);
+    return clean ? clean.split(/\s+/).filter(Boolean) : [];
+  }
+  function scoreTerm(r, t) {
+    const title = normalize(r.title),
+      location = normalize(r.location),
+      keywords = (r.keywords || []).map(normalize),
+      content = normalize(r.content);
+    let metaScore = 0,
+      bodyScore = 0;
+    if (title === t) metaScore += 1200;
+    else if (title.startsWith(t)) metaScore += 1000;
+    else if (title.includes(t)) metaScore += 850;
+    if (location === t) metaScore += 1100;
+    else if (location.startsWith(t)) metaScore += 950;
+    else if (location.includes(t)) metaScore += 800;
+    if (keywords.some((k) => k === t)) metaScore += 1100;
+    else if (keywords.some((k) => k.startsWith(t))) metaScore += 950;
+    else if (keywords.some((k) => k.includes(t))) metaScore += 800;
+    if (content.includes(t)) bodyScore += 40;
+    return { matched: metaScore > 0 || bodyScore > 0, metaScore, bodyScore };
+  }
+  function scoreRecord(r, terms) {
+    if (!terms.length) return { matched: true, tier: 0, score: 0 };
+    let totalMeta = 0,
+      totalBody = 0,
+      metadataTerms = 0;
+    for (const t of terms) {
+      const p = scoreTerm(r, t);
+      if (!p.matched) return { matched: false, tier: 99, score: 0 };
+      if (p.metaScore > 0) metadataTerms++;
+      totalMeta += p.metaScore;
+      totalBody += p.bodyScore;
+    }
+    return {
+      matched: true,
+      tier: metadataTerms === terms.length ? 0 : metadataTerms > 0 ? 1 : 2,
+      score: totalMeta + totalBody,
+    };
+  }
+  function render() {
+    const terms = getSearchTerms(searchInput.value),
+      year = yearFilter.value,
+      series = seriesFilter.value;
+    const filtered = records
+      .map((record, originalIndex) => ({
+        record,
+        originalIndex,
+        ...scoreRecord(record, terms),
+      }))
+      .filter(
+        (i) =>
+          (!year || i.record.published_date?.startsWith(year)) &&
+          matchesSeries(i.record, series) &&
+          i.matched,
+      )
+      .sort((a, b) =>
+        terms.length
+          ? a.tier !== b.tier
+            ? a.tier - b.tier
+            : a.score !== b.score
+              ? b.score - a.score
+              : a.originalIndex - b.originalIndex
+          : a.originalIndex - b.originalIndex,
+      )
+      .map((i) => i.record);
+    resultCount.textContent = `共 ${filtered.length} 篇`;
+    emptyState.hidden = filtered.length !== 0;
+    articleList.innerHTML = filtered
+      .map((r) => {
+        const n = r.series_number
+            ? `#${String(r.series_number).padStart(3, "0")}`
+            : "非编号",
+          chips = (r.keywords || [])
+            .slice(0, 4)
+            .map((k) => `<span class="chip">${escapeHtml(k)}</span>`)
+            .join(""),
+          snippet = (r.content || "").replace(/\s+/g, " ").trim();
+        return `<button class="article-card" type="button" data-id="${r.id}"><div class="article-top"><span>${escapeHtml(fmtDate(r.published_date))} · ${escapeHtml(n)}</span><span class="preserve">${escapeHtml(r.preserve_level || "")}</span></div><h2>${escapeHtml(r.title)}</h2>${r.location ? `<div class="article-location">📍 ${escapeHtml(r.location)}</div>` : ""}<div class="article-snippet">${escapeHtml(snippet)}</div><div class="chips">${chips}</div></button>`;
+      })
+      .join("");
+  }
+  async function loadComments(articleId) {
+    commentStatus.textContent = "";
+    commentList.innerHTML = "";
+    commentEmpty.hidden = true;
+    commentCount.textContent = "读取中…";
+    const { data, error } = await db
+      .from("wentao_archive_comments")
+      .select("id,article_id,user_id,author_name,content,created_at")
+      .eq("article_id", articleId)
+      .order("created_at", { ascending: true });
+    if (error) {
+      console.error(error);
+      commentCount.textContent = "评论读取失败";
+      commentEmpty.hidden = false;
+      commentEmpty.textContent = "暂时无法读取评论。";
+      return;
+    }
+    const rows = data || [];
+    commentCount.textContent = `${rows.length} 条`;
+    commentEmpty.hidden = rows.length > 0;
+    commentEmpty.textContent = "还没有评论。";
+    commentList.innerHTML = rows
+      .map(
+        (c) =>
+          `<article class="archive-comment"><div class="archive-comment-head"><span class="archive-comment-author">${escapeHtml(c.author_name)}</span><time class="archive-comment-time">${escapeHtml(new Date(c.created_at).toLocaleString("zh-CN", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }))}</time></div><div class="archive-comment-text">${escapeHtml(c.content)}</div>${currentUser?.id === c.user_id ? `<button class="archive-comment-delete" type="button" data-comment-id="${c.id}">删除</button>` : ""}</article>`,
+      )
+      .join("");
+  }
+  async function openRecord(r) {
+    currentRecord = r;
+    const n = r.series_number
+      ? `#${String(r.series_number).padStart(3, "0")}`
+      : "非编号";
+    readerMeta.textContent = [
+      fmtDate(r.published_date),
+      n,
+      r.series_name,
+      r.location,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    readerTitle.textContent = r.title;
+    readerTags.innerHTML = (r.keywords || [])
+      .map((k) => `<span class="chip">${escapeHtml(k)}</span>`)
+      .join("");
+    readerContent.textContent = r.content || "";
+    if (r.notes) {
+      readerNotesWrap.hidden = false;
+      readerNotes.textContent = r.notes;
+    } else {
+      readerNotesWrap.hidden = true;
+      readerNotes.textContent = "";
+    }
+    commentInput.value = "";
+    dialog.showModal();
+    await loadComments(r.id);
+  }
+  async function submitComment() {
+    if (!currentUser || !currentRecord) return;
+    const content = commentInput.value.trim();
+    if (!content) {
+      commentStatus.textContent = "请输入评论。";
+      return;
+    }
+    commentSubmit.disabled = true;
+    commentStatus.textContent = "正在发表…";
+    const { error } = await db.from("wentao_archive_comments").insert({
+      article_id: currentRecord.id,
+      user_id: currentUser.id,
+      author_name: getUserLabel(currentUser),
+      content,
+    });
+    commentSubmit.disabled = false;
+    if (error) {
+      console.error(error);
+      commentStatus.textContent = "发表失败，请重试。";
+      return;
+    }
+    commentInput.value = "";
+    commentStatus.textContent = "已发表";
+    await loadComments(currentRecord.id);
+  }
+  async function deleteComment(id) {
+    if (!currentRecord) return;
+    const { error } = await db
+      .from("wentao_archive_comments")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      console.error(error);
+      commentStatus.textContent = "删除失败。";
+      return;
+    }
+    await loadComments(currentRecord.id);
+  }
+  async function tryExistingSession() {
+    const { data: s } = await db.auth.getSession();
+    if (s?.session?.user) {
+      await showLoggedIn(s.session.user);
+      return true;
+    }
+    const { data: u } = await db.auth.getUser();
+    if (u?.user) {
+      await showLoggedIn(u.user);
+      return true;
+    }
+    showLoggedOut();
+    return false;
+  }
+  async function loginHere() {
+    const username = loginUsername.value.trim(),
+      password = loginPassword.value;
+    if (!username || !password) {
+      loginStatus.textContent = "请输入用户名和密码。";
+      return;
+    }
+    loginButton.disabled = true;
+    loginStatus.textContent = "正在登录…";
+    const { data, error } = await db.auth.signInWithPassword({
+      email: usernameToEmail(username),
+      password,
+    });
+    loginButton.disabled = false;
+    if (error) {
+      console.error(error);
+      loginStatus.textContent = "用户名或密码不正确。";
+      return;
+    }
+    loginStatus.textContent = "";
+    if (data?.user) await showLoggedIn(data.user);
+  }
+  articleList.addEventListener("click", (e) => {
+    const card = e.target.closest(".article-card");
+    if (!card) return;
+    const r = records.find((x) => String(x.id) === card.dataset.id);
+    if (r) openRecord(r);
+  });
+  commentSubmit.addEventListener("click", submitComment);
+  commentInput.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") submitComment();
+  });
+  commentList.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-comment-id]");
+    if (b) deleteComment(b.dataset.commentId);
+  });
+  searchInput.addEventListener("input", render);
+  yearFilter.addEventListener("change", render);
+  seriesFilter.addEventListener("change", render);
+  clearFilters.addEventListener("click", () => {
+    searchInput.value = "";
+    yearFilter.value = "";
+    seriesFilter.value = "";
+    render();
+  });
+  closeDialog.addEventListener("click", () => dialog.close());
+  dialog.addEventListener("click", (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+  loginButton.addEventListener("click", loginHere);
+  loginPassword.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") loginHere();
+  });
+  await tryExistingSession();
+  db.auth.onAuthStateChange(async (_event, session) => {
+    if (session?.user) await showLoggedIn(session.user);
+    else showLoggedOut();
+  });
 });
