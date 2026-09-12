@@ -1,80 +1,54 @@
 document.addEventListener("DOMContentLoaded", async function () {
-
   /* =====================================================
      JNX + SUPABASE
   ====================================================== */
 
-  const SUPABASE_URL =
-    "https://qdehfgjifhtczkrpuadl.supabase.co";
+  const SUPABASE_URL = "https://qdehfgjifhtczkrpuadl.supabase.co";
 
-  const SUPABASE_KEY =
-    "sb_publishable_ChrvUYG2OES6q2kCpkBJcA_uaAmfOVp";
-
+  const SUPABASE_KEY = "sb_publishable_ChrvUYG2OES6q2kCpkBJcA_uaAmfOVp";
 
   /* =====================================================
      LOAD SUPABASE
   ====================================================== */
 
   function loadSupabase() {
-
     return new Promise(function (resolve, reject) {
-
       if (window.supabase) {
         resolve();
         return;
       }
 
-      const script =
-        document.createElement("script");
+      const script = document.createElement("script");
 
-      script.src =
-        "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+      script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
       script.onload = resolve;
 
       script.onerror = function () {
-        reject(
-          new Error(
-            "Supabase library failed to load."
-          )
-        );
+        reject(new Error("Supabase library failed to load."));
       };
 
       document.head.appendChild(script);
-
     });
-
   }
 
-
   try {
-
     await loadSupabase();
-
   } catch (error) {
-
     console.error(error);
 
     alert("JNX 无法连接到服务器。");
 
     return;
-
   }
-
 
   /* =====================================================
      SUPABASE CLIENT
   ====================================================== */
 
-  const db =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
-
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   console.log("JNX Supabase loaded");
-
 
   /* =====================================================
      LANGUAGE
@@ -82,416 +56,213 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let language = "zh";
 
-
-  const languageBtn =
-    document.getElementById("languageBtn");
-
+  const languageBtn = document.getElementById("languageBtn");
 
   function updateLanguage() {
-
-    document
-      .querySelectorAll("[data-en][data-zh]")
-      .forEach(function (element) {
-
-        element.textContent =
-          element.getAttribute(
-            "data-" + language
-          );
-
-      });
-
+    document.querySelectorAll("[data-en][data-zh]").forEach(function (element) {
+      element.textContent = element.getAttribute("data-" + language);
+    });
 
     if (languageBtn) {
-
-      languageBtn.textContent =
-        language === "zh"
-          ? "English"
-          : "中文";
-
+      languageBtn.textContent = language === "zh" ? "English" : "中文";
     }
 
+    const settingsChinese = document.getElementById("settingsChinese");
 
-    const settingsChinese =
-      document.getElementById(
-        "settingsChinese"
-      );
-
-    const settingsEnglish =
-      document.getElementById(
-        "settingsEnglish"
-      );
-
+    const settingsEnglish = document.getElementById("settingsEnglish");
 
     if (settingsChinese) {
-
-      settingsChinese.classList.toggle(
-        "active",
-        language === "zh"
-      );
-
+      settingsChinese.classList.toggle("active", language === "zh");
     }
-
 
     if (settingsEnglish) {
-
-      settingsEnglish.classList.toggle(
-        "active",
-        language === "en"
-      );
-
+      settingsEnglish.classList.toggle("active", language === "en");
     }
-
   }
-
 
   if (languageBtn) {
+    languageBtn.onclick = function () {
+      language = language === "zh" ? "en" : "zh";
 
-    languageBtn.onclick =
-      function () {
+      updateLanguage();
 
-        language =
-          language === "zh"
-            ? "en"
-            : "zh";
+      updateAccountUI();
 
-        updateLanguage();
-
-        updateAccountUI();
-
-        loadSiteUpdates();
-
-      };
-
+      loadSiteUpdates();
+    };
   }
-
-
 
   /* =====================================================
      LOGIN ELEMENTS
   ===================================================== */
 
-  const loginModal =
-    document.getElementById("loginModal");
+  const loginModal = document.getElementById("loginModal");
 
-  const loginClose =
-    document.getElementById("loginClose");
+  const loginClose = document.getElementById("loginClose");
 
-  const loginOverlay =
-    document.getElementById("loginOverlay");
+  const loginOverlay = document.getElementById("loginOverlay");
 
-  const loginLinks =
-    document.querySelectorAll(".login-link");
+  const loginLinks = document.querySelectorAll(".login-link");
 
-  const loginUsername =
-    document.getElementById("loginUsername");
+  const loginUsername = document.getElementById("loginUsername");
 
-  const loginPassword =
-    document.getElementById("loginPassword");
+  const loginPassword = document.getElementById("loginPassword");
 
-  const loginButton =
-    document.getElementById("loginButton");
-
-
+  const loginButton = document.getElementById("loginButton");
 
   /* =====================================================
      REGISTER
   ===================================================== */
 
-  const registerModal =
-    document.getElementById("registerModal");
+  const registerModal = document.getElementById("registerModal");
 
-  const registerClose =
-    document.getElementById("registerClose");
+  const registerClose = document.getElementById("registerClose");
 
-  const registerOverlay =
-    document.getElementById("registerOverlay");
+  const registerOverlay = document.getElementById("registerOverlay");
 
-  const registerLink =
-    document.getElementById("registerLink");
+  const registerLink = document.getElementById("registerLink");
 
-  const backToLogin =
-    document.getElementById("backToLogin");
+  const backToLogin = document.getElementById("backToLogin");
 
-  const registerUsername =
-    document.getElementById("registerUsername");
+  const registerUsername = document.getElementById("registerUsername");
 
-  const registerPassword =
-    document.getElementById("registerPassword");
+  const registerPassword = document.getElementById("registerPassword");
 
-  const registerConfirmPassword =
-    document.getElementById(
-      "registerConfirmPassword"
-    );
+  const registerConfirmPassword = document.getElementById(
+    "registerConfirmPassword",
+  );
 
-  const registerButton =
-    document.getElementById("registerButton");
-
-
+  const registerButton = document.getElementById("registerButton");
 
   /* =====================================================
      USER MENU
   ===================================================== */
 
-  const userMenuButton =
-    document.getElementById(
-      "userMenuButton"
-    );
+  const userMenuButton = document.getElementById("userMenuButton");
 
-  const userMenu =
-    document.getElementById("userMenu");
+  const userMenu = document.getElementById("userMenu");
 
-  const userMenuName =
-    document.getElementById("userMenuName");
+  const userMenuName = document.getElementById("userMenuName");
 
-  const welcomeUser =
-    document.getElementById("welcomeUser");
+  const welcomeUser = document.getElementById("welcomeUser");
 
-  const logoutButton =
-    document.getElementById("logoutButton");
+  const logoutButton = document.getElementById("logoutButton");
 
-  const profileButton =
-    document.getElementById("profileButton");
+  const profileButton = document.getElementById("profileButton");
 
-  const settingsButton =
-    document.getElementById("settingsButton");
-
-
+  const settingsButton = document.getElementById("settingsButton");
 
   /* =====================================================
      PROFILE
   ===================================================== */
 
-  const profileModal =
-    document.getElementById("profileModal");
+  const profileModal = document.getElementById("profileModal");
 
-  const profileOverlay =
-    document.getElementById("profileOverlay");
+  const profileOverlay = document.getElementById("profileOverlay");
 
-  const profileClose =
-    document.getElementById("profileClose");
+  const profileClose = document.getElementById("profileClose");
 
-  const profileUsername =
-    document.getElementById("profileUsername");
+  const profileUsername = document.getElementById("profileUsername");
 
-  const profileDisplayName =
-    document.getElementById(
-      "profileDisplayName"
-    );
+  const profileDisplayName = document.getElementById("profileDisplayName");
 
-  const profileAvatar =
-    document.getElementById("profileAvatar");
-
-
+  const profileAvatar = document.getElementById("profileAvatar");
 
   /* =====================================================
      SETTINGS
   ===================================================== */
 
-  const settingsModal =
-    document.getElementById("settingsModal");
+  const settingsModal = document.getElementById("settingsModal");
 
-  const settingsOverlay =
-    document.getElementById(
-      "settingsOverlay"
-    );
+  const settingsOverlay = document.getElementById("settingsOverlay");
 
-  const settingsClose =
-    document.getElementById("settingsClose");
+  const settingsClose = document.getElementById("settingsClose");
 
-  const settingsCancel =
-    document.getElementById(
-      "settingsCancel"
-    );
+  const settingsCancel = document.getElementById("settingsCancel");
 
-  const settingsSave =
-    document.getElementById("settingsSave");
+  const settingsSave = document.getElementById("settingsSave");
 
-  const displayNameInput =
-    document.getElementById(
-      "displayNameInput"
-    );
+  const displayNameInput = document.getElementById("displayNameInput");
 
-  const settingsUsername =
-    document.getElementById(
-      "settingsUsername"
-    );
+  const settingsUsername = document.getElementById("settingsUsername");
 
-  const settingsChinese =
-    document.getElementById(
-      "settingsChinese"
-    );
+  const settingsChinese = document.getElementById("settingsChinese");
 
-  const settingsEnglish =
-    document.getElementById(
-      "settingsEnglish"
-    );
-
-
+  const settingsEnglish = document.getElementById("settingsEnglish");
 
   /* =====================================================
      ACCOUNT SETTINGS
   ===================================================== */
 
-  const changeUsernameButton =
-    document.getElementById(
-      "changeUsernameButton"
-    );
+  const changeUsernameButton = document.getElementById("changeUsernameButton");
 
-  const changePasswordButton =
-    document.getElementById(
-      "changePasswordButton"
-    );
+  const changePasswordButton = document.getElementById("changePasswordButton");
 
-  const deleteAccountButton =
-    document.getElementById(
-      "deleteAccountButton"
-    );
-
-
+  const deleteAccountButton = document.getElementById("deleteAccountButton");
 
   /* =====================================================
      USERNAME MODAL
   ===================================================== */
 
-  const usernameModal =
-    document.getElementById(
-      "usernameModal"
-    );
+  const usernameModal = document.getElementById("usernameModal");
 
-  const usernameOverlay =
-    document.getElementById(
-      "usernameOverlay"
-    );
+  const usernameOverlay = document.getElementById("usernameOverlay");
 
-  const usernameClose =
-    document.getElementById(
-      "usernameClose"
-    );
+  const usernameClose = document.getElementById("usernameClose");
 
-  const newUsername =
-    document.getElementById(
-      "newUsername"
-    );
+  const newUsername = document.getElementById("newUsername");
 
-  const saveUsernameButton =
-    document.getElementById(
-      "saveUsernameButton"
-    );
-
-
+  const saveUsernameButton = document.getElementById("saveUsernameButton");
 
   /* =====================================================
      PASSWORD MODAL
   ===================================================== */
 
-  const passwordModal =
-    document.getElementById(
-      "passwordModal"
-    );
+  const passwordModal = document.getElementById("passwordModal");
 
-  const passwordOverlay =
-    document.getElementById(
-      "passwordOverlay"
-    );
+  const passwordOverlay = document.getElementById("passwordOverlay");
 
-  const passwordClose =
-    document.getElementById(
-      "passwordClose"
-    );
+  const passwordClose = document.getElementById("passwordClose");
 
-  const oldPassword =
-    document.getElementById(
-      "oldPassword"
-    );
+  const oldPassword = document.getElementById("oldPassword");
 
-  const newPassword =
-    document.getElementById(
-      "newPassword"
-    );
+  const newPassword = document.getElementById("newPassword");
 
-  const confirmNewPassword =
-    document.getElementById(
-      "confirmNewPassword"
-    );
+  const confirmNewPassword = document.getElementById("confirmNewPassword");
 
-  const savePasswordButton =
-    document.getElementById(
-      "savePasswordButton"
-    );
-
-
+  const savePasswordButton = document.getElementById("savePasswordButton");
 
   /* =====================================================
      DARK / LIGHT
   ===================================================== */
 
-  const darkModeButton =
-    document.getElementById(
-      "darkModeButton"
-    );
+  const darkModeButton = document.getElementById("darkModeButton");
 
-  const lightModeButton =
-    document.getElementById(
-      "lightModeButton"
-    );
-
-
+  const lightModeButton = document.getElementById("lightModeButton");
 
   /* =====================================================
      RECENT ACTIVITY
   ===================================================== */
 
-  const activityList =
-    document.getElementById(
-      "activityList"
-    );
+  const activityList = document.getElementById("activityList");
 
-  const activityLoading =
-    document.getElementById(
-      "activityLoading"
-    );
+  const activityLoading = document.getElementById("activityLoading");
 
-  const adminEditButton =
-    document.getElementById(
-      "adminEditButton"
-    );
+  const adminEditButton = document.getElementById("adminEditButton");
 
-  const adminActivityModal =
-    document.getElementById(
-      "adminActivityModal"
-    );
+  const adminActivityModal = document.getElementById("adminActivityModal");
 
-  const adminActivityOverlay =
-    document.getElementById(
-      "adminActivityOverlay"
-    );
+  const adminActivityOverlay = document.getElementById("adminActivityOverlay");
 
-  const adminActivityClose =
-    document.getElementById(
-      "adminActivityClose"
-    );
+  const adminActivityClose = document.getElementById("adminActivityClose");
 
-  const adminActivityCancel =
-    document.getElementById(
-      "adminActivityCancel"
-    );
+  const adminActivityCancel = document.getElementById("adminActivityCancel");
 
-  const adminActivitySave =
-    document.getElementById(
-      "adminActivitySave"
-    );
+  const adminActivitySave = document.getElementById("adminActivitySave");
 
-  const activityTitleInput =
-    document.getElementById(
-      "activityTitleInput"
-    );
+  const activityTitleInput = document.getElementById("activityTitleInput");
 
-  const activityContentInput =
-    document.getElementById(
-      "activityContentInput"
-    );
-
-
+  const activityContentInput = document.getElementById("activityContentInput");
 
   /* =====================================================
      CURRENT USER
@@ -503,61 +274,35 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   let currentActivity = null;
 
-
-
   /* =====================================================
      ADMIN
   ===================================================== */
 
   function isAdmin() {
-
     if (!currentUser) {
       return false;
     }
 
-
-    const username =
-      currentUser.user_metadata?.username
-        ?.toLowerCase()
-        ?.trim();
-
+    const username = currentUser.user_metadata?.username?.toLowerCase()?.trim();
 
     return username === "jnxyyds";
-
   }
-
-
 
   /* =====================================================
      USERNAME → EMAIL
   ===================================================== */
 
   function usernameToEmail(username) {
-
-    return (
-      username
-        .toLowerCase()
-        .trim() +
-      "@jnx.local"
-    );
-
+    return username.toLowerCase().trim() + "@jnx.local";
   }
-
-
 
   /* =====================================================
      USERNAME VALIDATION
   ===================================================== */
 
   function validUsername(username) {
-
-    return /^[a-zA-Z0-9_.-]{3,20}$/.test(
-      username
-    );
-
+    return /^[a-zA-Z0-9_.-]{3,20}$/.test(username);
   }
-
-
 
   /* =====================================================
      MODALS
@@ -567,2048 +312,1148 @@ document.addEventListener("DOMContentLoaded", async function () {
     loginModal?.classList.add("active");
   }
 
-
   function closeLogin() {
     loginModal?.classList.remove("active");
   }
-
 
   function openRegister() {
     registerModal?.classList.add("active");
   }
 
-
   function closeRegister() {
     registerModal?.classList.remove("active");
   }
-
 
   function openProfile() {
     profileModal?.classList.add("active");
   }
 
-
   function closeProfile() {
     profileModal?.classList.remove("active");
   }
-
 
   function openSettings() {
     settingsModal?.classList.add("active");
   }
 
-
   function closeSettings() {
     settingsModal?.classList.remove("active");
   }
-
 
   function openUsernameModal() {
     usernameModal?.classList.add("active");
   }
 
-
   function closeUsernameModal() {
     usernameModal?.classList.remove("active");
   }
-
 
   function openPasswordModal() {
     passwordModal?.classList.add("active");
   }
 
-
   function closePasswordModal() {
     passwordModal?.classList.remove("active");
   }
-
 
   function openAdminActivity() {
     adminActivityModal?.classList.add("active");
   }
 
-
   function closeAdminActivity() {
     adminActivityModal?.classList.remove("active");
   }
-
-
 
   /* =====================================================
      LOGIN LINKS
   ===================================================== */
 
   loginLinks.forEach(function (link) {
+    link.onclick = function (event) {
+      event.preventDefault();
 
-    link.onclick =
-      function (event) {
-
-        event.preventDefault();
-
-        openLogin();
-
-      };
-
+      openLogin();
+    };
   });
 
+  loginClose?.addEventListener("click", closeLogin);
 
-  loginClose?.addEventListener(
-    "click",
-    closeLogin
-  );
-
-
-  loginOverlay?.addEventListener(
-    "click",
-    closeLogin
-  );
-
-
+  loginOverlay?.addEventListener("click", closeLogin);
 
   /* =====================================================
      REGISTER NAVIGATION
   ===================================================== */
 
-  registerLink?.addEventListener(
-    "click",
-    function (event) {
+  registerLink?.addEventListener("click", function (event) {
+    event.preventDefault();
 
-      event.preventDefault();
+    closeLogin();
 
-      closeLogin();
+    openRegister();
+  });
 
-      openRegister();
+  registerClose?.addEventListener("click", closeRegister);
 
-    }
-  );
+  registerOverlay?.addEventListener("click", closeRegister);
 
+  backToLogin?.addEventListener("click", function (event) {
+    event.preventDefault();
 
-  registerClose?.addEventListener(
-    "click",
-    closeRegister
-  );
+    closeRegister();
 
-
-  registerOverlay?.addEventListener(
-    "click",
-    closeRegister
-  );
-
-
-  backToLogin?.addEventListener(
-    "click",
-    function (event) {
-
-      event.preventDefault();
-
-      closeRegister();
-
-      openLogin();
-
-    }
-  );
-
-
+    openLogin();
+  });
 
   /* =====================================================
      LOAD PROFILE
   ===================================================== */
 
   async function loadProfile(user) {
-
     if (!user) {
-
       currentProfile = null;
 
       return null;
-
     }
 
-
-    const result =
-      await db
-        .from("profiles")
-        .select(
-          "id, username, display_name"
-        )
-        .eq("id", user.id)
-        .maybeSingle();
-
+    const result = await db
+      .from("profiles")
+      .select("id, username, display_name")
+      .eq("id", user.id)
+      .maybeSingle();
 
     if (result.error) {
-
-      console.error(
-        "Profile loading error:",
-        result.error
-      );
+      console.error("Profile loading error:", result.error);
 
       currentProfile = null;
 
       return null;
-
     }
 
-
-    currentProfile =
-      result.data || null;
-
+    currentProfile = result.data || null;
 
     return currentProfile;
-
   }
-
-
 
   /* =====================================================
      UPDATE PROFILE UI
   ===================================================== */
 
   function updateProfileUI() {
-
     if (!currentProfile) {
       return;
     }
 
-
     const username =
-      currentProfile.username ||
-      currentUser?.user_metadata?.username ||
-      "";
+      currentProfile.username || currentUser?.user_metadata?.username || "";
 
-
-    const displayName =
-      currentProfile.display_name ||
-      username ||
-      "JNX User";
-
+    const displayName = currentProfile.display_name || username || "JNX User";
 
     if (profileUsername) {
-
-      profileUsername.textContent =
-        username;
-
+      profileUsername.textContent = username;
     }
-
 
     if (profileDisplayName) {
-
-      profileDisplayName.textContent =
-        displayName;
-
+      profileDisplayName.textContent = displayName;
     }
-
 
     if (profileAvatar) {
-
-      profileAvatar.textContent =
-        displayName
-          .charAt(0)
-          .toUpperCase();
-
+      profileAvatar.textContent = displayName.charAt(0).toUpperCase();
     }
-
 
     if (settingsUsername) {
-
-      settingsUsername.textContent =
-        username;
-
+      settingsUsername.textContent = username;
     }
-
 
     if (displayNameInput) {
-
-      displayNameInput.value =
-        displayName;
-
+      displayNameInput.value = displayName;
     }
-
 
     if (userMenuName) {
-
-      userMenuName.textContent =
-        displayName;
-
+      userMenuName.textContent = displayName;
     }
-
 
     if (welcomeUser) {
-
-      welcomeUser.style.display =
-        "block";
+      welcomeUser.style.display = "block";
 
       welcomeUser.textContent =
-        language === "zh"
-          ? "你好，" + displayName
-          : "Hi, " + displayName;
-
+        language === "zh" ? "你好，" + displayName : "Hi, " + displayName;
     }
-
   }
-
-
 
   /* =====================================================
      ADMIN BUTTON UI
   ===================================================== */
 
   function updateAdminUI() {
-
     if (!adminEditButton) {
       return;
     }
 
-
     if (isAdmin()) {
-
-      adminEditButton.style.display =
-        "inline-flex";
-
+      adminEditButton.style.display = "inline-flex";
     } else {
-
-      adminEditButton.style.display =
-        "none";
-
+      adminEditButton.style.display = "none";
     }
-
   }
-
-
 
   /* =====================================================
      ACCOUNT UI
   ===================================================== */
 
   async function updateAccountUI() {
-
-    const result =
-      await db.auth.getUser();
-
+    const result = await db.auth.getUser();
 
     if (result.error) {
-
-      console.error(
-        "Auth error:",
-        result.error
-      );
+      console.error("Auth error:", result.error);
 
       return;
-
     }
 
-
-    currentUser =
-      result.data.user || null;
-
+    currentUser = result.data.user || null;
 
     if (!currentUser) {
-
       currentProfile = null;
 
+      userMenuButton && (userMenuButton.style.display = "none");
 
-      userMenuButton &&
-        (userMenuButton.style.display =
-          "none");
+      welcomeUser && (welcomeUser.style.display = "none");
 
+      logoutButton && (logoutButton.style.display = "none");
 
-      welcomeUser &&
-        (welcomeUser.style.display =
-          "none");
-
-
-      logoutButton &&
-        (logoutButton.style.display =
-          "none");
-
-
-      loginLinks.forEach(
-        function (link) {
-
-          link.style.display =
-            "inline";
-
-        }
-      );
-
+      loginLinks.forEach(function (link) {
+        link.style.display = "inline";
+      });
 
       updateAdminUI();
 
       return;
-
     }
 
-
-    await loadProfile(
-      currentUser
-    );
-
+    await loadProfile(currentUser);
 
     updateProfileUI();
 
+    userMenuButton && (userMenuButton.style.display = "flex");
 
-    userMenuButton &&
-      (userMenuButton.style.display =
-        "flex");
+    logoutButton && (logoutButton.style.display = "block");
 
-
-    logoutButton &&
-      (logoutButton.style.display =
-        "block");
-
-
-    loginLinks.forEach(
-      function (link) {
-
-        link.style.display =
-          "none";
-
-      }
-    );
-
+    loginLinks.forEach(function (link) {
+      link.style.display = "none";
+    });
 
     updateAdminUI();
-
   }
-
-
 
   /* =====================================================
      REGISTER
   ===================================================== */
 
-  registerButton?.addEventListener(
-    "click",
-    async function () {
+  registerButton?.addEventListener("click", async function () {
+    const username = registerUsername.value.trim().toLowerCase();
 
-      const username =
-        registerUsername.value
-          .trim()
-          .toLowerCase();
+    const password = registerPassword.value;
 
+    const confirmPassword = registerConfirmPassword.value;
 
-      const password =
-        registerPassword.value;
+    if (!username) {
+      alert(language === "zh" ? "请输入用户名。" : "Please enter a username.");
 
+      return;
+    }
 
-      const confirmPassword =
-        registerConfirmPassword.value;
-
-
-      if (!username) {
-
-        alert(
-          language === "zh"
-            ? "请输入用户名。"
-            : "Please enter a username."
-        );
-
-        return;
-
-      }
-
-
-      if (!validUsername(username)) {
-
-        alert(
-          language === "zh"
-            ? "用户名需要 3-20 个字符，只能使用字母、数字、下划线、点或横线。"
-            : "Username must be 3-20 characters."
-        );
-
-        return;
-
-      }
-
-
-      if (password.length < 6) {
-
-        alert(
-          language === "zh"
-            ? "密码至少需要 6 个字符。"
-            : "Password must be at least 6 characters."
-        );
-
-        return;
-
-      }
-
-
-      if (
-        password !==
-        confirmPassword
-      ) {
-
-        alert(
-          language === "zh"
-            ? "两次密码不一致。"
-            : "Passwords do not match."
-        );
-
-        return;
-
-      }
-
-
-      registerButton.disabled =
-        true;
-
-
-      registerButton.textContent =
-        language === "zh"
-          ? "创建中..."
-          : "Creating...";
-
-
-      const signup =
-        await db.auth.signUp({
-
-          email:
-            usernameToEmail(
-              username
-            ),
-
-          password:
-            password,
-
-          options: {
-
-            data: {
-
-              username:
-                username,
-
-              display_name:
-                username
-
-            }
-
-          }
-
-        });
-
-
-      registerButton.disabled =
-        false;
-
-
-      registerButton.textContent =
-        language === "zh"
-          ? "创建账号"
-          : "Create account";
-
-
-      if (signup.error) {
-
-        console.error(
-          "Signup error:",
-          signup.error
-        );
-
-        alert(
-          signup.error.message
-        );
-
-        return;
-
-      }
-
-
-      registerUsername.value =
-        "";
-
-      registerPassword.value =
-        "";
-
-      registerConfirmPassword.value =
-        "";
-
-
-      closeRegister();
-
-
+    if (!validUsername(username)) {
       alert(
         language === "zh"
-          ? "注册成功！"
-          : "Account created!"
+          ? "用户名需要 3-20 个字符，只能使用字母、数字、下划线、点或横线。"
+          : "Username must be 3-20 characters.",
       );
 
-
-      openLogin();
-
-
-      if (loginUsername) {
-
-        loginUsername.value =
-          username;
-
-      }
-
+      return;
     }
-  );
 
+    if (password.length < 6) {
+      alert(
+        language === "zh"
+          ? "密码至少需要 6 个字符。"
+          : "Password must be at least 6 characters.",
+      );
 
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      alert(language === "zh" ? "两次密码不一致。" : "Passwords do not match.");
+
+      return;
+    }
+
+    registerButton.disabled = true;
+
+    registerButton.textContent =
+      language === "zh" ? "创建中..." : "Creating...";
+
+    const signup = await db.auth.signUp({
+      email: usernameToEmail(username),
+
+      password: password,
+
+      options: {
+        data: {
+          username: username,
+
+          display_name: username,
+        },
+      },
+    });
+
+    registerButton.disabled = false;
+
+    registerButton.textContent =
+      language === "zh" ? "创建账号" : "Create account";
+
+    if (signup.error) {
+      console.error("Signup error:", signup.error);
+
+      alert(signup.error.message);
+
+      return;
+    }
+
+    registerUsername.value = "";
+
+    registerPassword.value = "";
+
+    registerConfirmPassword.value = "";
+
+    closeRegister();
+
+    alert(language === "zh" ? "注册成功！" : "Account created!");
+
+    openLogin();
+
+    if (loginUsername) {
+      loginUsername.value = username;
+    }
+  });
 
   /* =====================================================
      LOGIN
   ===================================================== */
 
-  loginButton?.addEventListener(
-    "click",
-    async function () {
+  loginButton?.addEventListener("click", async function () {
+    const username = loginUsername.value.trim().toLowerCase();
 
-      const username =
-        loginUsername.value
-          .trim()
-          .toLowerCase();
+    const password = loginPassword.value;
 
-
-      const password =
-        loginPassword.value;
-
-
-      if (!username || !password) {
-
-        alert(
-          language === "zh"
-            ? "请输入用户名和密码。"
-            : "Please enter username and password."
-        );
-
-        return;
-
-      }
-
-
-      if (!validUsername(username)) {
-
-        alert(
-          language === "zh"
-            ? "用户名格式不正确。"
-            : "Invalid username."
-        );
-
-        return;
-
-      }
-
-
-      loginButton.disabled =
-        true;
-
-
-      loginButton.textContent =
+    if (!username || !password) {
+      alert(
         language === "zh"
-          ? "登录中..."
-          : "Logging in...";
+          ? "请输入用户名和密码。"
+          : "Please enter username and password.",
+      );
 
+      return;
+    }
 
-      const login =
-        await db.auth.signInWithPassword({
+    if (!validUsername(username)) {
+      alert(language === "zh" ? "用户名格式不正确。" : "Invalid username.");
 
-          email:
-            usernameToEmail(
-              username
-            ),
+      return;
+    }
 
-          password:
-            password
+    loginButton.disabled = true;
 
-        });
+    loginButton.textContent = language === "zh" ? "登录中..." : "Logging in...";
 
+    const login = await db.auth.signInWithPassword({
+      email: usernameToEmail(username),
 
-      loginButton.disabled =
-        false;
+      password: password,
+    });
 
+    loginButton.disabled = false;
 
-      loginButton.textContent =
-        language === "zh"
-          ? "登录"
-          : "Log in";
+    loginButton.textContent = language === "zh" ? "登录" : "Log in";
 
-
-      if (login.error) {
-
-        console.error(
-          "Login error:",
-          login.error
-        );
-
-        alert(
-          language === "zh"
-            ? "用户名或密码错误。"
-            : "Incorrect username or password."
-        );
-
-        return;
-
-      }
-
-
-      loginPassword.value =
-        "";
-
-
-      closeLogin();
-
-
-      await updateAccountUI();
-
-
-      await loadSiteUpdates();
-
+    if (login.error) {
+      console.error("Login error:", login.error);
 
       alert(
         language === "zh"
-          ? "登录成功！"
-          : "Login successful!"
+          ? "用户名或密码错误。"
+          : "Incorrect username or password.",
       );
 
+      return;
     }
-  );
 
+    loginPassword.value = "";
 
+    closeLogin();
+
+    await updateAccountUI();
+
+    await loadSiteUpdates();
+
+    alert(language === "zh" ? "登录成功！" : "Login successful!");
+  });
 
   /* =====================================================
      USER MENU
   ===================================================== */
 
-  userMenuButton?.addEventListener(
-    "click",
-    function (event) {
+  userMenuButton?.addEventListener("click", function (event) {
+    event.stopPropagation();
 
-      event.stopPropagation();
+    userMenu?.classList.toggle("active");
 
-      userMenu?.classList.toggle(
-        "active"
-      );
+    userMenuButton.classList.toggle("active");
+  });
 
-      userMenuButton.classList.toggle(
-        "active"
-      );
+  document.addEventListener("click", function () {
+    userMenu?.classList.remove("active");
 
-    }
-  );
-
-
-  document.addEventListener(
-    "click",
-    function () {
-
-      userMenu?.classList.remove(
-        "active"
-      );
-
-      userMenuButton?.classList.remove(
-        "active"
-      );
-
-    }
-  );
-
-
+    userMenuButton?.classList.remove("active");
+  });
 
   /* =====================================================
      PROFILE
   ===================================================== */
 
-  profileButton?.addEventListener(
-    "click",
-    async function (event) {
+  profileButton?.addEventListener("click", async function (event) {
+    event.stopPropagation();
 
-      event.stopPropagation();
+    await updateAccountUI();
 
-      await updateAccountUI();
+    openProfile();
+  });
 
-      openProfile();
+  profileClose?.addEventListener("click", closeProfile);
 
-    }
-  );
-
-
-  profileClose?.addEventListener(
-    "click",
-    closeProfile
-  );
-
-
-  profileOverlay?.addEventListener(
-    "click",
-    closeProfile
-  );
-
-
+  profileOverlay?.addEventListener("click", closeProfile);
 
   /* =====================================================
      SETTINGS
   ===================================================== */
 
-  settingsButton?.addEventListener(
-    "click",
-    async function (event) {
+  settingsButton?.addEventListener("click", async function (event) {
+    event.stopPropagation();
 
-      event.stopPropagation();
+    await updateAccountUI();
 
-      await updateAccountUI();
+    openSettings();
+  });
 
-      openSettings();
+  settingsClose?.addEventListener("click", closeSettings);
 
-    }
-  );
+  settingsOverlay?.addEventListener("click", closeSettings);
 
-
-  settingsClose?.addEventListener(
-    "click",
-    closeSettings
-  );
-
-
-  settingsOverlay?.addEventListener(
-    "click",
-    closeSettings
-  );
-
-
-  settingsCancel?.addEventListener(
-    "click",
-    closeSettings
-  );
-
-
+  settingsCancel?.addEventListener("click", closeSettings);
 
   /* =====================================================
      SETTINGS LANGUAGE
   ===================================================== */
 
-  settingsChinese?.addEventListener(
-    "click",
-    function () {
+  settingsChinese?.addEventListener("click", function () {
+    language = "zh";
 
-      language = "zh";
+    updateLanguage();
 
-      updateLanguage();
+    updateAccountUI();
 
-      updateAccountUI();
+    loadSiteUpdates();
+  });
 
-      loadSiteUpdates();
+  settingsEnglish?.addEventListener("click", function () {
+    language = "en";
 
-    }
-  );
+    updateLanguage();
 
+    updateAccountUI();
 
-  settingsEnglish?.addEventListener(
-    "click",
-    function () {
-
-      language = "en";
-
-      updateLanguage();
-
-      updateAccountUI();
-
-      loadSiteUpdates();
-
-    }
-  );
-
-
+    loadSiteUpdates();
+  });
 
   /* =====================================================
      SAVE DISPLAY NAME
   ===================================================== */
 
   async function saveDisplayName() {
-
     if (!currentUser) {
-
-      alert(
-        language === "zh"
-          ? "请先登录。"
-          : "Please log in first."
-      );
+      alert(language === "zh" ? "请先登录。" : "Please log in first.");
 
       return;
-
     }
 
-
-    const newName =
-      displayNameInput.value.trim();
-
+    const newName = displayNameInput.value.trim();
 
     if (!newName) {
-
       alert(
         language === "zh"
           ? "Display Name 不能为空。"
-          : "Display Name cannot be empty."
+          : "Display Name cannot be empty.",
       );
 
       return;
-
     }
 
-
     if (newName.length > 30) {
-
       alert(
         language === "zh"
           ? "Display Name 最多 30 个字符。"
-          : "Display Name can be up to 30 characters."
+          : "Display Name can be up to 30 characters.",
       );
 
       return;
-
     }
 
+    settingsSave.disabled = true;
 
-    settingsSave.disabled =
-      true;
+    settingsSave.textContent = language === "zh" ? "保存中..." : "Saving...";
 
+    const update = await db
+      .from("profiles")
+      .update({
+        display_name: newName,
+      })
+      .eq("id", currentUser.id)
+      .select("id, username, display_name");
 
-    settingsSave.textContent =
-      language === "zh"
-        ? "保存中..."
-        : "Saving...";
+    settingsSave.disabled = false;
 
-
-    const update =
-      await db
-        .from("profiles")
-        .update({
-
-          display_name:
-            newName
-
-        })
-        .eq(
-          "id",
-          currentUser.id
-        )
-        .select(
-          "id, username, display_name"
-        );
-
-
-    settingsSave.disabled =
-      false;
-
-
-    settingsSave.textContent =
-      language === "zh"
-        ? "保存更改"
-        : "Save Changes";
-
+    settingsSave.textContent = language === "zh" ? "保存更改" : "Save Changes";
 
     if (update.error) {
-
-      console.error(
-        update.error
-      );
+      console.error(update.error);
 
       alert(
         language === "zh"
-          ? "保存失败：" +
-            update.error.message
-          : "Save failed: " +
-            update.error.message
+          ? "保存失败：" + update.error.message
+          : "Save failed: " + update.error.message,
       );
 
       return;
-
     }
 
-
-    if (
-      !update.data ||
-      update.data.length === 0
-    ) {
-
+    if (!update.data || update.data.length === 0) {
       alert(
-        language === "zh"
-          ? "没有更新任何数据。"
-          : "No profile was updated."
+        language === "zh" ? "没有更新任何数据。" : "No profile was updated.",
       );
 
       return;
-
     }
 
-
-    currentProfile =
-      update.data[0];
-
+    currentProfile = update.data[0];
 
     updateProfileUI();
 
     closeSettings();
 
-
     alert(
-      language === "zh"
-        ? "Display Name 保存成功！"
-        : "Display Name saved!"
+      language === "zh" ? "Display Name 保存成功！" : "Display Name saved!",
     );
-
   }
 
+  settingsSave?.addEventListener("click", saveDisplayName);
 
-  settingsSave?.addEventListener(
-    "click",
-    saveDisplayName
-  );
-
-
-/* =====================================================
+  /* =====================================================
    RECENT ACTIVITY
 ===================================================== */
 
-async function loadSiteUpdates() {
+  async function loadSiteUpdates() {
+    if (!activityList) {
+      return;
+    }
 
-  if (!activityList) {
-    return;
-  }
+    if (activityLoading) {
+      activityLoading.style.display = "block";
+    }
 
-
-  if (activityLoading) {
-
-    activityLoading.style.display =
-      "block";
-
-  }
-
-
-  const result =
-    await db
+    const result = await db
       .from("site_updates")
-      .select(
-        "id, title, content, updated_at"
-      )
-      .order(
-        "updated_at",
-        {
-          ascending: false
-        }
-      );
+      .select("id, title, content, updated_at")
+      .order("updated_at", {
+        ascending: false,
+      });
 
+    if (activityLoading) {
+      activityLoading.style.display = "none";
+    }
 
-  if (activityLoading) {
+    if (result.error) {
+      console.error("Site updates error:", result.error);
 
-    activityLoading.style.display =
-      "none";
+      activityList.innerHTML = "";
 
-  }
+      const errorElement = document.createElement("p");
 
+      errorElement.textContent =
+        language === "zh"
+          ? "动态暂时无法加载。"
+          : "Updates could not be loaded.";
 
-  if (result.error) {
+      activityList.appendChild(errorElement);
 
-    console.error(
-      "Site updates error:",
-      result.error
-    );
+      return;
+    }
 
     activityList.innerHTML = "";
 
-    const errorElement =
-      document.createElement("p");
+    const updates = result.data || [];
 
-    errorElement.textContent =
-      language === "zh"
-        ? "动态暂时无法加载。"
-        : "Updates could not be loaded.";
-
-    activityList.appendChild(
-      errorElement
-    );
-
-    return;
-
-  }
-
-
-  activityList.innerHTML = "";
-
-
-  const updates =
-    result.data || [];
-
-
-  /* =====================================================
+    /* =====================================================
      没有动态
   ===================================================== */
 
-  if (updates.length === 0) {
+    if (updates.length === 0) {
+      const empty = document.createElement("p");
 
-    const empty =
-      document.createElement("p");
+      empty.textContent =
+        language === "zh" ? "暂时还没有动态。" : "No updates yet.";
 
-    empty.textContent =
-      language === "zh"
-        ? "暂时还没有动态。"
-        : "No updates yet.";
+      activityList.appendChild(empty);
 
-    activityList.appendChild(
-      empty
-    );
+      currentActivity = null;
 
-    currentActivity = null;
+      return;
+    }
 
-    return;
-
-  }
-
-
-  /* =====================================================
+    /* =====================================================
      保存最新动态
   ===================================================== */
 
-  currentActivity =
-    updates[0];
+    currentActivity = updates[0];
 
-
-  /* =====================================================
+    /* =====================================================
      只显示最新三条
   ===================================================== */
 
-  const recentUpdates =
-    updates.slice(0, 3);
+    const recentUpdates = updates.slice(0, 3);
 
+    recentUpdates.forEach(function (item) {
+      const card = document.createElement("article");
 
-  recentUpdates.forEach(
-    function (item) {
+      card.className = "activity-card";
 
-      const card =
-        document.createElement(
-          "article"
-        );
+      const title = document.createElement("h3");
 
-      card.className =
-        "activity-card";
+      title.textContent = item.title || "";
 
+      const content = document.createElement("p");
 
-      const title =
-        document.createElement(
-          "h3"
-        );
+      content.textContent = item.content || "";
 
-      title.textContent =
-        item.title || "";
-
-
-      const content =
-        document.createElement(
-          "p"
-        );
-
-      content.textContent =
-        item.content || "";
-
-
-      const date =
-        document.createElement(
-          "small"
-        );
-
+      const date = document.createElement("small");
 
       if (item.updated_at) {
-
-        const dateObject =
-          new Date(
-            item.updated_at
-          );
-
+        const dateObject = new Date(item.updated_at);
 
         date.textContent =
           language === "zh"
-            ? "更新于 " +
-              dateObject.toLocaleString(
-                "zh-CN"
-              )
-            : "Updated " +
-              dateObject.toLocaleString(
-                "en-US"
-              );
-
+            ? "更新于 " + dateObject.toLocaleString("zh-CN")
+            : "Updated " + dateObject.toLocaleString("en-US");
       }
 
+      card.appendChild(title);
 
-      card.appendChild(
-        title
-      );
+      card.appendChild(content);
 
-      card.appendChild(
-        content
-      );
+      card.appendChild(date);
 
-      card.appendChild(
-        date
-      );
+      activityList.appendChild(card);
+    });
 
-
-      activityList.appendChild(
-        card
-      );
-
-    }
-  );
-
-
-  /* =====================================================
+    /* =====================================================
      查看全部动态按钮
   ===================================================== */
 
-  if (updates.length > 3) {
+    if (updates.length > 3) {
+      const viewAllButton = document.createElement("button");
 
-    const viewAllButton =
-      document.createElement(
-        "button"
-      );
+      viewAllButton.className = "view-all-updates-button";
 
-    viewAllButton.className =
-      "view-all-updates-button";
+      viewAllButton.textContent =
+        language === "zh" ? "查看全部动态 →" : "View all updates →";
 
+      viewAllButton.addEventListener("click", function () {
+        openAllUpdatesModal(updates);
+      });
 
-    viewAllButton.textContent =
-      language === "zh"
-        ? "查看全部动态 →"
-        : "View all updates →";
-
-
-    viewAllButton.addEventListener(
-      "click",
-      function () {
-
-        openAllUpdatesModal(
-          updates
-        );
-
-      }
-    );
-
-
-    activityList.appendChild(
-      viewAllButton
-    );
-
+      activityList.appendChild(viewAllButton);
+    }
   }
 
-}
-
-
-
-/* =====================================================
+  /* =====================================================
    ALL UPDATES MODAL
 ===================================================== */
 
-function openAllUpdatesModal(
-  updates
-) {
+  function openAllUpdatesModal(updates) {
+    let modal = document.getElementById("allUpdatesModal");
 
-  let modal =
-    document.getElementById(
-      "allUpdatesModal"
-    );
-
-
-  /* =====================================================
+    /* =====================================================
      第一次打开时创建 Modal
   ===================================================== */
 
-  if (!modal) {
+    if (!modal) {
+      modal = document.createElement("div");
 
-    modal =
-      document.createElement(
-        "div"
-      );
+      modal.id = "allUpdatesModal";
 
-    modal.id =
-      "allUpdatesModal";
+      modal.className = "all-updates-modal";
 
-    modal.className =
-      "all-updates-modal";
+      const overlay = document.createElement("div");
 
+      overlay.className = "all-updates-overlay";
 
-    const overlay =
-      document.createElement(
-        "div"
-      );
+      const box = document.createElement("div");
 
-    overlay.className =
-      "all-updates-overlay";
+      box.className = "all-updates-box";
 
+      const close = document.createElement("button");
 
-    const box =
-      document.createElement(
-        "div"
-      );
+      close.className = "all-updates-close";
 
-    box.className =
-      "all-updates-box";
+      close.textContent = "×";
 
-
-    const close =
-      document.createElement(
-        "button"
-      );
-
-    close.className =
-      "all-updates-close";
-
-    close.textContent =
-      "×";
-
-
-    close.addEventListener(
-      "click",
-      function () {
-
+      close.addEventListener("click", function () {
         closeAllUpdatesModal();
+      });
 
-      }
-    );
-
-
-    overlay.addEventListener(
-      "click",
-      function () {
-
+      overlay.addEventListener("click", function () {
         closeAllUpdatesModal();
+      });
 
-      }
-    );
+      const title = document.createElement("h2");
 
+      title.className = "all-updates-title";
 
-    const title =
-      document.createElement(
-        "h2"
-      );
+      const subtitle = document.createElement("p");
 
-    title.className =
-      "all-updates-title";
+      subtitle.className = "all-updates-subtitle";
 
+      const list = document.createElement("div");
 
-    const subtitle =
-      document.createElement(
-        "p"
-      );
+      list.className = "all-updates-list";
 
-    subtitle.className =
-      "all-updates-subtitle";
+      list.id = "allUpdatesList";
 
+      box.appendChild(close);
 
-    const list =
-      document.createElement(
-        "div"
-      );
+      box.appendChild(title);
 
-    list.className =
-      "all-updates-list";
+      box.appendChild(subtitle);
 
-    list.id =
-      "allUpdatesList";
+      box.appendChild(list);
 
+      modal.appendChild(overlay);
 
-    box.appendChild(
-      close
-    );
+      modal.appendChild(box);
 
-    box.appendChild(
-      title
-    );
+      document.body.appendChild(modal);
+    }
 
-    box.appendChild(
-      subtitle
-    );
+    const title = modal.querySelector(".all-updates-title");
 
-    box.appendChild(
-      list
-    );
+    const subtitle = modal.querySelector(".all-updates-subtitle");
 
+    const list = document.getElementById("allUpdatesList");
 
-    modal.appendChild(
-      overlay
-    );
+    title.textContent = language === "zh" ? "全部动态" : "All Updates";
 
-    modal.appendChild(
-      box
-    );
+    subtitle.textContent =
+      language === "zh" ? "JNX 的所有历史动态" : "All updates from JNX";
 
+    list.innerHTML = "";
 
-    document.body.appendChild(
-      modal
-    );
-
-  }
-
-
-  const title =
-    modal.querySelector(
-      ".all-updates-title"
-    );
-
-
-  const subtitle =
-    modal.querySelector(
-      ".all-updates-subtitle"
-    );
-
-
-  const list =
-    document.getElementById(
-      "allUpdatesList"
-    );
-
-
-  title.textContent =
-    language === "zh"
-      ? "全部动态"
-      : "All Updates";
-
-
-  subtitle.textContent =
-    language === "zh"
-      ? "JNX 的所有历史动态"
-      : "All updates from JNX";
-
-
-  list.innerHTML = "";
-
-
-  /* =====================================================
+    /* =====================================================
      显示所有历史动态
   ===================================================== */
 
-  updates.forEach(
-    function (item) {
+    updates.forEach(function (item) {
+      const card = document.createElement("article");
 
-      const card =
-        document.createElement(
-          "article"
-        );
+      card.className = "all-update-card";
 
-      card.className =
-        "all-update-card";
+      const cardTitle = document.createElement("h3");
 
+      cardTitle.textContent = item.title || "";
 
-      const cardTitle =
-        document.createElement(
-          "h3"
-        );
+      const cardContent = document.createElement("p");
 
-      cardTitle.textContent =
-        item.title || "";
+      cardContent.textContent = item.content || "";
 
-
-      const cardContent =
-        document.createElement(
-          "p"
-        );
-
-      cardContent.textContent =
-        item.content || "";
-
-
-      const cardDate =
-        document.createElement(
-          "small"
-        );
-
+      const cardDate = document.createElement("small");
 
       if (item.updated_at) {
-
-        const dateObject =
-          new Date(
-            item.updated_at
-          );
-
+        const dateObject = new Date(item.updated_at);
 
         cardDate.textContent =
           language === "zh"
-            ? "更新于 " +
-              dateObject.toLocaleString(
-                "zh-CN"
-              )
-            : "Updated " +
-              dateObject.toLocaleString(
-                "en-US"
-              );
-
+            ? "更新于 " + dateObject.toLocaleString("zh-CN")
+            : "Updated " + dateObject.toLocaleString("en-US");
       }
 
+      card.appendChild(cardTitle);
 
-      card.appendChild(
-        cardTitle
-      );
+      card.appendChild(cardContent);
 
-      card.appendChild(
-        cardContent
-      );
+      card.appendChild(cardDate);
 
-      card.appendChild(
-        cardDate
-      );
+      list.appendChild(card);
+    });
 
+    modal.classList.add("active");
+  }
 
-      list.appendChild(
-        card
-      );
-
-    }
-  );
-
-
-  modal.classList.add(
-    "active"
-  );
-
-}
-
-
-
-/* =====================================================
+  /* =====================================================
    CLOSE ALL UPDATES
 ===================================================== */
 
-function closeAllUpdatesModal() {
+  function closeAllUpdatesModal() {
+    const modal = document.getElementById("allUpdatesModal");
 
-  const modal =
-    document.getElementById(
-      "allUpdatesModal"
-    );
-
-
-  if (modal) {
-
-    modal.classList.remove(
-      "active"
-    );
-
+    if (modal) {
+      modal.classList.remove("active");
+    }
   }
-
-}
-
 
   /* =====================================================
      ADMIN EDIT BUTTON
   ===================================================== */
 
-  adminEditButton?.addEventListener(
-    "click",
-    async function (event) {
+  adminEditButton?.addEventListener("click", async function (event) {
+    event.stopPropagation();
 
-      event.stopPropagation();
+    if (!isAdmin()) {
+      alert(
+        language === "zh"
+          ? "你没有管理员权限。"
+          : "You are not an administrator.",
+      );
 
-
-      if (!isAdmin()) {
-
-        alert(
-          language === "zh"
-            ? "你没有管理员权限。"
-            : "You are not an administrator."
-        );
-
-        return;
-
-      }
-
-
-      await loadSiteUpdates();
-
-
-      if (currentActivity) {
-
-        if (activityTitleInput) {
-
-          activityTitleInput.value =
-            currentActivity.title || "";
-
-        }
-
-
-        if (activityContentInput) {
-
-          activityContentInput.value =
-            currentActivity.content || "";
-
-        }
-
-      } else {
-
-        if (activityTitleInput) {
-
-          activityTitleInput.value =
-            "";
-
-        }
-
-
-        if (activityContentInput) {
-
-          activityContentInput.value =
-            "";
-
-        }
-
-      }
-
-
-      openAdminActivity();
-
+      return;
     }
-  );
 
+    await loadSiteUpdates();
 
+    if (currentActivity) {
+      if (activityTitleInput) {
+        activityTitleInput.value = currentActivity.title || "";
+      }
+
+      if (activityContentInput) {
+        activityContentInput.value = currentActivity.content || "";
+      }
+    } else {
+      if (activityTitleInput) {
+        activityTitleInput.value = "";
+      }
+
+      if (activityContentInput) {
+        activityContentInput.value = "";
+      }
+    }
+
+    openAdminActivity();
+  });
 
   /* =====================================================
      ADMIN MODAL CLOSE
   ===================================================== */
 
-  adminActivityClose?.addEventListener(
-    "click",
-    closeAdminActivity
-  );
+  adminActivityClose?.addEventListener("click", closeAdminActivity);
 
+  adminActivityOverlay?.addEventListener("click", closeAdminActivity);
 
-  adminActivityOverlay?.addEventListener(
-    "click",
-    closeAdminActivity
-  );
-
-
-  adminActivityCancel?.addEventListener(
-    "click",
-    closeAdminActivity
-  );
-
-
+  adminActivityCancel?.addEventListener("click", closeAdminActivity);
 
   /* =====================================================
      ADMIN SAVE UPDATE
   ===================================================== */
 
-  adminActivitySave?.addEventListener(
-    "click",
-    async function () {
-
-      if (!isAdmin()) {
-
-        alert(
-          language === "zh"
-            ? "你没有管理员权限。"
-            : "You are not an administrator."
-        );
-
-        return;
-
-      }
-
-
-      const title =
-        activityTitleInput
-          ? activityTitleInput.value.trim()
-          : "";
-
-
-      const content =
-        activityContentInput
-          ? activityContentInput.value.trim()
-          : "";
-
-
-      if (!title) {
-
-        alert(
-          language === "zh"
-            ? "请输入标题。"
-            : "Please enter a title."
-        );
-
-        return;
-
-      }
-
-
-      if (!content) {
-
-        alert(
-          language === "zh"
-            ? "请输入动态内容。"
-            : "Please enter some content."
-        );
-
-        return;
-
-      }
-
-
-      adminActivitySave.disabled =
-        true;
-
-
-      adminActivitySave.textContent =
+  adminActivitySave?.addEventListener("click", async function () {
+    if (!isAdmin()) {
+      alert(
         language === "zh"
-          ? "保存中..."
-          : "Saving...";
+          ? "你没有管理员权限。"
+          : "You are not an administrator.",
+      );
 
+      return;
+    }
 
-      let result;
+    const title = activityTitleInput ? activityTitleInput.value.trim() : "";
 
+    const content = activityContentInput
+      ? activityContentInput.value.trim()
+      : "";
 
-      /* =========================================
+    if (!title) {
+      alert(language === "zh" ? "请输入标题。" : "Please enter a title.");
+
+      return;
+    }
+
+    if (!content) {
+      alert(
+        language === "zh" ? "请输入动态内容。" : "Please enter some content.",
+      );
+
+      return;
+    }
+
+    adminActivitySave.disabled = true;
+
+    adminActivitySave.textContent =
+      language === "zh" ? "保存中..." : "Saving...";
+
+    let result;
+
+    /* =========================================
          ALWAYS CREATE A NEW UPDATE
          title = TITLE
          content = CONTENT
       ========================================= */
 
-      result =
-        await db
-          .from("site_updates")
-          .insert({
+    result = await db
+      .from("site_updates")
+      .insert({
+        title: title,
 
-            title:
-              title,
+        content: content,
 
-            content:
-              content,
+        updated_at: new Date().toISOString(),
+      })
+      .select();
 
-            updated_at:
-              new Date().toISOString()
+    adminActivitySave.disabled = false;
 
-          })
-          .select();
+    adminActivitySave.textContent = language === "zh" ? "保存" : "Save";
 
-
-      adminActivitySave.disabled =
-        false;
-
-
-      adminActivitySave.textContent =
-        language === "zh"
-          ? "保存"
-          : "Save";
-
-
-      if (result.error) {
-
-        console.error(
-          "Update save error:",
-          result.error
-        );
-
-
-        alert(
-          language === "zh"
-            ? "保存失败：" +
-              result.error.message
-            : "Save failed: " +
-              result.error.message
-        );
-
-        return;
-
-      }
-
-
-      closeAdminActivity();
-
-
-      await loadSiteUpdates();
-
+    if (result.error) {
+      console.error("Update save error:", result.error);
 
       alert(
         language === "zh"
-          ? "动态保存成功！"
-          : "Update saved!"
+          ? "保存失败：" + result.error.message
+          : "Save failed: " + result.error.message,
       );
 
+      return;
     }
-  );
 
+    closeAdminActivity();
 
+    await loadSiteUpdates();
+
+    alert(language === "zh" ? "动态保存成功！" : "Update saved!");
+  });
 
   /* =====================================================
      DARK MODE
   ===================================================== */
 
-  darkModeButton?.addEventListener(
-    "click",
-    function () {
+  darkModeButton?.addEventListener("click", function () {
+    document.body.classList.add("dark-mode");
 
-      document.body.classList.add(
-        "dark-mode"
-      );
+    localStorage.setItem("jnx-theme", "dark");
+  });
 
-      localStorage.setItem(
-        "jnx-theme",
-        "dark"
-      );
+  lightModeButton?.addEventListener("click", function () {
+    document.body.classList.remove("dark-mode");
 
-    }
-  );
+    localStorage.setItem("jnx-theme", "light");
+  });
 
-
-  lightModeButton?.addEventListener(
-    "click",
-    function () {
-
-      document.body.classList.remove(
-        "dark-mode"
-      );
-
-      localStorage.setItem(
-        "jnx-theme",
-        "light"
-      );
-
-    }
-  );
-
-
-  const savedTheme =
-    localStorage.getItem(
-      "jnx-theme"
-    );
-
+  const savedTheme = localStorage.getItem("jnx-theme");
 
   if (savedTheme === "dark") {
-
-    document.body.classList.add(
-      "dark-mode"
-    );
-
+    document.body.classList.add("dark-mode");
   }
-
-
 
   /* =====================================================
      CHANGE USERNAME
   ===================================================== */
 
-  changeUsernameButton?.addEventListener(
-    "click",
-    function (event) {
+  changeUsernameButton?.addEventListener("click", function (event) {
+    event.stopPropagation();
 
-      event.stopPropagation();
+    openUsernameModal();
+  });
 
-      openUsernameModal();
+  usernameClose?.addEventListener("click", closeUsernameModal);
 
-    }
-  );
-
-
-  usernameClose?.addEventListener(
-    "click",
-    closeUsernameModal
-  );
-
-
-  usernameOverlay?.addEventListener(
-    "click",
-    closeUsernameModal
-  );
-
-
+  usernameOverlay?.addEventListener("click", closeUsernameModal);
 
   /* =====================================================
      CHANGE PASSWORD
   ===================================================== */
 
-  changePasswordButton?.addEventListener(
-    "click",
-    function (event) {
+  changePasswordButton?.addEventListener("click", function (event) {
+    event.stopPropagation();
 
-      event.stopPropagation();
+    openPasswordModal();
+  });
 
-      openPasswordModal();
+  passwordClose?.addEventListener("click", closePasswordModal);
 
-    }
-  );
-
-
-  passwordClose?.addEventListener(
-    "click",
-    closePasswordModal
-  );
-
-
-  passwordOverlay?.addEventListener(
-    "click",
-    closePasswordModal
-  );
-
-
+  passwordOverlay?.addEventListener("click", closePasswordModal);
 
   /* =====================================================
      SAVE PASSWORD
   ===================================================== */
 
-  savePasswordButton?.addEventListener(
-    "click",
-    async function () {
+  savePasswordButton?.addEventListener("click", async function () {
+    if (!currentUser) {
+      alert(language === "zh" ? "请先登录。" : "Please log in first.");
 
-      if (!currentUser) {
+      return;
+    }
 
-        alert(
-          language === "zh"
-            ? "请先登录。"
-            : "Please log in first."
-        );
+    const password = newPassword.value;
 
-        return;
+    const confirm = confirmNewPassword.value;
 
-      }
-
-
-      const password =
-        newPassword.value;
-
-
-      const confirm =
-        confirmNewPassword.value;
-
-
-      if (password.length < 6) {
-
-        alert(
-          language === "zh"
-            ? "新密码至少需要 6 个字符。"
-            : "New password must be at least 6 characters."
-        );
-
-        return;
-
-      }
-
-
-      if (password !== confirm) {
-
-        alert(
-          language === "zh"
-            ? "两次密码不一致。"
-            : "Passwords do not match."
-        );
-
-        return;
-
-      }
-
-
-      const result =
-        await db.auth.updateUser({
-
-          password:
-            password
-
-        });
-
-
-      if (result.error) {
-
-        alert(
-          language === "zh"
-            ? "修改密码失败：" +
-              result.error.message
-            : "Password change failed: " +
-              result.error.message
-        );
-
-        return;
-
-      }
-
-
-      oldPassword.value = "";
-
-      newPassword.value = "";
-
-      confirmNewPassword.value = "";
-
-
-      closePasswordModal();
-
-
+    if (password.length < 6) {
       alert(
         language === "zh"
-          ? "密码修改成功！"
-          : "Password changed successfully!"
+          ? "新密码至少需要 6 个字符。"
+          : "New password must be at least 6 characters.",
       );
 
+      return;
     }
-  );
 
+    if (password !== confirm) {
+      alert(language === "zh" ? "两次密码不一致。" : "Passwords do not match.");
 
+      return;
+    }
+
+    const result = await db.auth.updateUser({
+      password: password,
+    });
+
+    if (result.error) {
+      alert(
+        language === "zh"
+          ? "修改密码失败：" + result.error.message
+          : "Password change failed: " + result.error.message,
+      );
+
+      return;
+    }
+
+    oldPassword.value = "";
+
+    newPassword.value = "";
+
+    confirmNewPassword.value = "";
+
+    closePasswordModal();
+
+    alert(
+      language === "zh" ? "密码修改成功！" : "Password changed successfully!",
+    );
+  });
 
   /* =====================================================
      DELETE ACCOUNT
   ===================================================== */
 
-  deleteAccountButton?.addEventListener(
-    "click",
-    async function () {
+  deleteAccountButton?.addEventListener("click", async function () {
+    const confirmed = confirm(
+      language === "zh"
+        ? "确定要删除账号吗？这个操作需要进一步处理。"
+        : "Are you sure you want to delete your account?",
+    );
 
-      const confirmed =
-        confirm(
-          language === "zh"
-            ? "确定要删除账号吗？这个操作需要进一步处理。"
-            : "Are you sure you want to delete your account?"
-        );
-
-
-      if (!confirmed) {
-        return;
-      }
-
-
-      alert(
-        language === "zh"
-          ? "为了安全起见，账号删除功能暂时需要通过服务器端处理。"
-          : "For security, account deletion currently requires server-side handling."
-      );
-
+    if (!confirmed) {
+      return;
     }
-  );
 
-
+    alert(
+      language === "zh"
+        ? "为了安全起见，账号删除功能暂时需要通过服务器端处理。"
+        : "For security, account deletion currently requires server-side handling.",
+    );
+  });
 
   /* =====================================================
      LOGOUT
   ===================================================== */
 
-  logoutButton?.addEventListener(
-    "click",
-    async function (event) {
+  logoutButton?.addEventListener("click", async function (event) {
+    event.stopPropagation();
 
-      event.stopPropagation();
+    const result = await db.auth.signOut();
 
+    if (result.error) {
+      console.error(result.error);
 
-      const result =
-        await db.auth.signOut();
+      alert(
+        language === "zh"
+          ? "退出登录失败：" + result.error.message
+          : "Logout failed: " + result.error.message,
+      );
 
+      return;
+    }
 
-      if (result.error) {
+    currentUser = null;
 
-        console.error(
-          result.error
-        );
+    currentProfile = null;
 
-        alert(
-          language === "zh"
-            ? "退出登录失败：" +
-              result.error.message
-            : "Logout failed: " +
-              result.error.message
-        );
+    currentActivity = null;
 
-        return;
+    closeProfile();
 
-      }
+    closeSettings();
 
+    closeUsernameModal();
 
-      currentUser = null;
+    closePasswordModal();
 
+    closeAdminActivity();
+
+    userMenu?.classList.remove("active");
+
+    userMenuButton?.classList.remove("active");
+
+    await updateAccountUI();
+
+    await loadSiteUpdates();
+
+    alert(language === "zh" ? "你已经退出登录。" : "You have been logged out.");
+  });
+
+  /* =====================================================
+     AUTH STATE
+  ===================================================== */
+
+  db.auth.onAuthStateChange(async function (event, session) {
+    console.log("Auth event:", event);
+
+    currentUser = session ? session.user : null;
+
+    if (session) {
+      await loadProfile(session.user);
+    } else {
       currentProfile = null;
+    }
 
-      currentActivity = null;
+    await updateAccountUI();
+  });
 
+  /* =====================================================
+     ESC
+  ===================================================== */
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      closeLogin();
+
+      closeRegister();
 
       closeProfile();
 
@@ -2619,108 +1464,8 @@ function closeAllUpdatesModal() {
       closePasswordModal();
 
       closeAdminActivity();
-
-
-      userMenu?.classList.remove(
-        "active"
-      );
-
-
-      userMenuButton?.classList.remove(
-        "active"
-      );
-
-
-      await updateAccountUI();
-
-
-      await loadSiteUpdates();
-
-
-      alert(
-        language === "zh"
-          ? "你已经退出登录。"
-          : "You have been logged out."
-      );
-
     }
-  );
-
-
-
-  /* =====================================================
-     AUTH STATE
-  ===================================================== */
-
-  db.auth.onAuthStateChange(
-    async function (
-      event,
-      session
-    ) {
-
-      console.log(
-        "Auth event:",
-        event
-      );
-
-
-      currentUser =
-        session
-          ? session.user
-          : null;
-
-
-      if (session) {
-
-        await loadProfile(
-          session.user
-        );
-
-      } else {
-
-        currentProfile =
-          null;
-
-      }
-
-
-      await updateAccountUI();
-
-    }
-  );
-
-
-
-  /* =====================================================
-     ESC
-  ===================================================== */
-
-  document.addEventListener(
-    "keydown",
-    function (event) {
-
-      if (event.key === "Escape") {
-
-        closeLogin();
-
-        closeRegister();
-
-        closeProfile();
-
-        closeSettings();
-
-        closeUsernameModal();
-
-        closePasswordModal();
-
-        closeAdminActivity();
-
-      }
-
-    }
-  );
-
-
+  });
 
   /* =====================================================
      START
@@ -2732,9 +1477,5 @@ function closeAllUpdatesModal() {
 
   await loadSiteUpdates();
 
-
-  console.log(
-    "JNX script initialized successfully."
-  );
-
+  console.log("JNX script initialized successfully.");
 });
