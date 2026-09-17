@@ -1,5 +1,29 @@
 (() => {
+  function loadGameHub() {
+    if (document.querySelector('script[data-jnx-game-hub]')) return;
+    const s = document.createElement("script");
+    s.src = "game-hub.js?v=2";
+    s.dataset.jnxGameHub = "1";
+    document.body.appendChild(s);
+  }
+
+  function openGameHub() {
+    if (window.__jnxOpenGameHub) {
+      window.__jnxOpenGameHub();
+      return;
+    }
+    loadGameHub();
+    let tries = 0;
+    const timer = setInterval(() => {
+      if (window.__jnxOpenGameHub) {
+        clearInterval(timer);
+        window.__jnxOpenGameHub();
+      } else if (++tries >= 30) clearInterval(timer);
+    }, 100);
+  }
+
   function init() {
+    loadGameHub();
     const card = [...document.querySelectorAll(".jnxCard")].find(
       (el) => el.dataset.a === "chat",
     );
@@ -32,6 +56,21 @@
     update();
     setInterval(update, 1000);
   }
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      const gameEntry = event.target.closest(
+        '.jnxCard[data-a="woodfish"], .jnxItem[data-a="woodfish"]',
+      );
+      if (!gameEntry) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openGameHub();
+    },
+    true,
+  );
+
   if (document.readyState === "loading")
     document.addEventListener("DOMContentLoaded", init, { once: true });
   else init();
