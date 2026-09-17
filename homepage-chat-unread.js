@@ -1,10 +1,15 @@
 (() => {
-  function loadGameHub() {
-    if (document.querySelector('script[data-jnx-game-hub]')) return;
+  function loadHelper(src, attr) {
+    if (document.querySelector(`script[${attr}]`)) return;
     const s = document.createElement("script");
-    s.src = "game-hub.js?v=2";
-    s.dataset.jnxGameHub = "1";
+    s.src = src;
+    s.setAttribute(attr, "1");
     document.body.appendChild(s);
+  }
+
+  function loadGameHub() {
+    loadHelper("game-hub.js?v=2", "data-jnx-game-hub");
+    loadHelper("navigation-back.js?v=1", "data-jnx-navigation-back");
   }
 
   function openGameHub() {
