@@ -320,7 +320,7 @@ body {
     const menu = document.createElement("div");
     menu.className = "jnxMenu";
     menu.innerHTML =
-      '<button class="jnxItem" data-a="recent">📝 最近在做什么</button><button class="jnxItem" data-a="archive">📚 写作档案</button><button class="jnxItem" data-a="woodfish">🎮 小游戏</button><button class="jnxItem" data-a="chat">💬 群聊</button><button class="jnxItem" data-a="members">👥 成员</button><button class="jnxItem" data-a="profile">👤 我的资料</button><button class="jnxItem" data-a="settings">⚙️ 设置</button>';
+      '<button class="jnxItem" data-a="recent">📝 最近在做什么</button><button class="jnxItem" data-a="archive">📚 写作档案</button><button class="jnxItem" data-a="woodfish">🎮 小游戏</button><button class="jnxItem" data-a="codelab">💻 Code Lab</button><button class="jnxItem" data-a="chat">💬 群聊</button><button class="jnxItem" data-a="members">👥 成员</button><button class="jnxItem" data-a="profile">👤 我的资料</button><button class="jnxItem" data-a="settings">⚙️ 设置</button>';
     document.body.appendChild(menu);
     const overlay = document.createElement("div");
     overlay.className = "jnxOverlay";
@@ -333,6 +333,7 @@ body {
     const go = (a) => {
       if (a === "recent") overlay.classList.add("open");
       else if (a === "archive") location.href = "archive.html";
+      else if (a === "codelab") { window.__jnxOpenCodeLab?.(); menu.classList.remove("open"); }
       else if (a === "menu") menu.classList.toggle("open");
       else if (a === "members") {
         if (window.__jnxOpenMembers) window.__jnxOpenMembers();
