@@ -555,6 +555,30 @@
         const content = document.createElement("div");
         content.className = "jnx-chat-content";
         content.textContent = row.content;
+        const shareMatch = /^\\[JNX_CODE_LAB_SHARE:(\\d+)\\]$/.exec(row.content || "");
+        if (shareMatch) {
+          content.textContent = "💻 来自 JNX Code Lab 的分享 · 正在加载…";
+          db.from("java_ai_chat_shares").select("id,user_id,question,answer,note").eq("id", Number(shareMatch[1])).maybeSingle().then(({data,error}) => {
+            if (error || !data || data.user_id !== row.user_id) {
+              content.textContent = "Code Lab 分享暂时无法加载";
+              return;
+            }
+            content.replaceChildren();
+            const heading = document.createElement("strong");
+            heading.textContent = "💻 来自 JNX Code Lab 的分享 · AI 生成内容";
+            const question = document.createElement("div");
+            question.textContent = "问题：\\n" + data.question;
+            const answer = document.createElement("pre");
+            answer.textContent = "AI 回答：\\n" + data.answer;
+            answer.style.cssText = "white-space:pre-wrap;overflow-wrap:anywhere;max-height:320px;overflow:auto;background:rgba(0,0,0,.16);border-radius:8px;padding:10px;margin:8px 0";
+            content.append(heading, question, answer);
+            if (data.note) {
+              const note = document.createElement("div");
+              note.textContent = "分享者备注：" + data.note;
+              content.append(note);
+            }
+          });
+        }
         const time = document.createElement("div");
         time.className = "jnx-chat-time";
         time.textContent = row.created_at
