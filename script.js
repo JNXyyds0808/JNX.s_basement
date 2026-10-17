@@ -567,9 +567,9 @@
             const heading = document.createElement("strong");
             heading.textContent = "💻 来自 JNX Code Lab 的分享 · AI 生成内容";
             const question = document.createElement("div");
-            question.textContent = "问题：\\n" + data.question;
+            question.textContent = "问题：\n" + data.question;
             const answer = document.createElement("pre");
-            answer.textContent = "AI 回答：\\n" + data.answer;
+            answer.textContent = "AI 回答：\n" + data.answer;
             answer.style.cssText = "white-space:pre-wrap;overflow-wrap:anywhere;max-height:320px;overflow:auto;background:rgba(0,0,0,.16);border-radius:8px;padding:10px;margin:8px 0";
             content.append(heading, question, answer);
             if (data.note) {
