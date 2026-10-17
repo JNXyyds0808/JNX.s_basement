@@ -555,7 +555,7 @@
         const content = document.createElement("div");
         content.className = "jnx-chat-content";
         content.textContent = row.content;
-        const shareMatch = /^\\[JNX_CODE_LAB_SHARE:(\\d+)\\]$/.exec(row.content || "");
+        const shareMatch = /^\[JNX_CODE_LAB_SHARE:(\d+)\]$/.exec(row.content || "");
         if (shareMatch) {
           content.textContent = "💻 来自 JNX Code Lab 的分享 · 正在加载…";
           db.from("java_ai_chat_shares").select("id,user_id,question,answer,note").eq("id", Number(shareMatch[1])).maybeSingle().then(({data,error}) => {
