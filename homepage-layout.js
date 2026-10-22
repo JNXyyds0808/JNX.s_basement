@@ -78,6 +78,23 @@ body {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
+.jnxFoliaLink {
+  display: block;
+  max-width: 100%;
+  margin: 18px auto 0;
+  padding: 7px 10px;
+  color: #bcb4d4;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.jnxFoliaLink:hover,
+.jnxFoliaLink:focus-visible {
+  color: #fff;
+  text-decoration: underline;
+}
 .jnxCard {
   min-height: 92px;
   padding: 18px;
@@ -313,6 +330,13 @@ body {
       grid.appendChild(b);
     });
     main.appendChild(grid);
+    const foliaLink = document.createElement("a");
+    foliaLink.className = "jnxFoliaLink";
+    foliaLink.href = "https://folia-player-jnxyyds0808.vercel.app";
+    foliaLink.target = "_blank";
+    foliaLink.rel = "noopener noreferrer";
+    foliaLink.textContent = "♫ Folia 音乐播放器 · 点击体验 ↗";
+    main.appendChild(foliaLink);
     const menuButton = document.createElement("button");
     menuButton.className = "jnxMenuBtn";
     menuButton.textContent = "☰";
